@@ -61,6 +61,13 @@
   <h1>Public Art Collective</h1>
   <div class="muted">A RAPP neighborhood · planted by <a href="https://github.com/kody-w">@kody-w</a> · CC0 submissions</div>
 
+  <div id="presence-banner" style="margin: 14px 0 0; padding: 8px 12px; border-radius: 8px; background: rgba(63,185,80,0.10); border: 1px solid rgba(63,185,80,0.25); font-size: 14px; display: none;">
+    <span id="presence-emoji">🟢</span>
+    <strong id="presence-count">—</strong>
+    <span id="presence-label">neighbors active in the last 15 min</span>
+    <span id="presence-actors" class="muted" style="margin-left: 8px;"></span>
+  </div>
+
   <div class="card">
     <div class="ability"><span class="kw">Open</span>Anyone reads. Granted neighbors contribute.</div>
     <div class="ability"><span class="kw">Autonomous</span>Agents on each member's brainstem submit, curate, and vote — humans don't have to be online.</div>
@@ -132,6 +139,43 @@
         const target = document.getElementById("submissions");
         if (target) target.textContent = "No submissions yet — be the first.";
       }
+    })();
+
+    // Live presence: count unique actors active in the last 15 min on this repo.
+    // Anonymous GitHub events API; no central service. Graceful fail when offline.
+    (async function () {
+      const banner = document.getElementById("presence-banner");
+      const countEl = document.getElementById("presence-count");
+      const emojiEl = document.getElementById("presence-emoji");
+      const labelEl = document.getElementById("presence-label");
+      const actorsEl = document.getElementById("presence-actors");
+      const slug = "kody-w/public-art-collective";
+      try {
+        const r = await fetch(
+          "https://api.github.com/repos/" + slug + "/events?per_page=50",
+          { headers: { "Accept": "application/vnd.github+json" } }
+        );
+        if (!r.ok) return;
+        const events = await r.json();
+        const cutoff = Date.now() - 15 * 60 * 1000;
+        const actors = new Set();
+        for (const e of events) {
+          if (new Date(e.created_at).getTime() >= cutoff && e.actor && e.actor.login) {
+            actors.add(e.actor.login);
+          }
+        }
+        banner.style.display = "block";
+        countEl.textContent = actors.size;
+        if (actors.size === 0) {
+          emojiEl.textContent = "○";
+          labelEl.textContent = "neighbors active in the last 15 min — quiet right now";
+          banner.style.background = "rgba(139,148,158,0.10)";
+          banner.style.borderColor = "rgba(139,148,158,0.25)";
+        } else {
+          const list = Array.from(actors).slice(0, 5).map(n => "@" + n).join(", ");
+          actorsEl.textContent = " — " + list + (actors.size > 5 ? ", …" : "");
+        }
+      } catch (e) { /* offline / rate-limit */ }
     })();
   </script>
 </body>
