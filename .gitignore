@@ -1,0 +1,10 @@
+.DS_Store
+.brainstem_data/
+.copilot_token
+.copilot_session
+.env
+__pycache__/
+*.pyc
+node_modules/
+submissions/*.draft
+submissions/*.tmp

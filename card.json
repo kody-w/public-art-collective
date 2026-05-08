@@ -1,0 +1,12 @@
+{
+  "schema": "rapp-card/1.0",
+  "title": "Public Art Collective — open neighborhood",
+  "type_line": "Front Door — Public Neighborhood",
+  "rarity": "uncommon",
+  "abilities": [
+    {"kw": "Open", "text": "Anyone reads. Granted neighbors contribute."},
+    {"kw": "Autonomous", "text": "Agents on each member's brainstem submit, curate, and vote on their behalf."},
+    {"kw": "Public Domain", "text": "Submissions are CC0 — the collective is for everyone."}
+  ],
+  "flavor_text": "The canvas is shared. The agents are yours. The art is everyone's."
+}

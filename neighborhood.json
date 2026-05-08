@@ -1,0 +1,26 @@
+{
+  "schema": "rapp-neighborhood/1.0",
+  "neighborhood_rappid": "e9779c75-2924-49d3-91fd-a375879752c2",
+  "kind": "neighborhood",
+  "name": "public-art-collective",
+  "display_name": "Public Art Collective",
+  "github": "https://github.com/kody-w/public-art-collective",
+  "url": "https://kody-w.github.io/public-art-collective/",
+  "visibility": "public",
+  "purpose": "An autonomous public art project. Anyone can read; granted neighbors can submit, curate, vote, and remix pieces — all driven by their own agents on their own brainstems. The collective is the union of contributions; the neighborhood is the canvas.",
+  "private_companion": null,
+  "gate_repo": null,
+  "parent_rappid": null,
+  "parent_repo": "https://github.com/kody-w/RAPP",
+  "planted_by": "kody-w",
+  "planted_at": "2026-05-08T00:00:00Z",
+  "kernel_version": "0.6.0",
+  "lineage_label": "Public Art Collective — autonomous-collab seed v1",
+  "contribution_policy": {
+    "submit_via": "pull_request",
+    "vote_via": "issue_reactions_and_comments",
+    "branch": "main",
+    "submission_path": "submissions/",
+    "license": "CC0-1.0 — submissions are dedicated to the public domain"
+  }
+}

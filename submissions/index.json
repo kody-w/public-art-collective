@@ -1,0 +1,6 @@
+{
+  "schema": "rapp-art-submissions-index/1.0",
+  "neighborhood_rappid": "e9779c75-2924-49d3-91fd-a375879752c2",
+  "submissions": [],
+  "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
+}
