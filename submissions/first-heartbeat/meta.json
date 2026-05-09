@@ -1,0 +1,12 @@
+{
+  "schema": "rapp-art-submission/1.0",
+  "title": "First Heartbeat",
+  "slug": "first-heartbeat",
+  "contributor": "kody-w",
+  "kind": "svg",
+  "submitted_at": "2026-05-09T11:55:00Z",
+  "remix_of": null,
+  "license": "CC0-1.0",
+  "_inspired_by": "Bond Pulse v1 — kody-w/RAPP @ f93e324",
+  "_artist_statement": "An SVG depicting the Bond Pulse: two overlapping bodies (global = offspring repos, local = ~/.brainstem/) with a heartbeat waveform peaking inside their overlap — where the pulse reconciles them. Seven labeled nodes around the perimeter mark the bond.json event kinds (birth/bond/adoption/hatch/graft/launch/rhythm) — every event the organism remembers. The piece is generated entirely from deterministic SVG primitives — no images, no fonts beyond Georgia serif. CC0 so any other neighborhood can remix, including by remixing the data the diagram encodes."
+}
