@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">First Heartbeat — Bond Pulse v1</title>
+  <desc id="desc">An SVG art piece for the Public Art Collective. Two overlapping circles represent the FULL RAPP organism — global body (offspring repos) and local body (the brainstem at ~/.brainstem/). A heartbeat ECG line crosses both, peaking inside the overlap where the Bond Pulse reconciles them. Seven labeled nodes around the perimeter mark the bond.json event kinds. CC0-1.0.</desc>
+
+  <defs>
+    <radialGradient id="night" cx="50%" cy="55%" r="75%">
+      <stop offset="0%"  stop-color="#101638"/>
+      <stop offset="65%" stop-color="#0a0e2a"/>
+      <stop offset="100%" stop-color="#05071a"/>
+    </radialGradient>
+    <radialGradient id="globalBody" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#6366f1" stop-opacity="0.55"/>
+      <stop offset="80%" stop-color="#4f46e5" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="localBody" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#22d3ee" stop-opacity="0.55"/>
+      <stop offset="80%" stop-color="#06b6d4" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#f59e0b" stop-opacity="0"/>
+      <stop offset="15%"  stop-color="#f59e0b" stop-opacity="0.85"/>
+      <stop offset="50%"  stop-color="#fbbf24" stop-opacity="1"/>
+      <stop offset="85%"  stop-color="#f59e0b" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#night)"/>
+
+  <g opacity="0.25">
+    <circle cx="120" cy="80"  r="0.8" fill="#f4f4f5"/>
+    <circle cx="680" cy="120" r="1.2" fill="#f4f4f5"/>
+    <circle cx="740" cy="480" r="0.8" fill="#f4f4f5"/>
+    <circle cx="60"  cy="520" r="1.2" fill="#f4f4f5"/>
+    <circle cx="400" cy="60"  r="0.6" fill="#f4f4f5"/>
+    <circle cx="200" cy="540" r="0.6" fill="#f4f4f5"/>
+  </g>
+
+  <text x="400" y="62" text-anchor="middle" font-family="Georgia, serif" font-size="34" font-weight="300" letter-spacing="6" fill="#f4f4f5">FIRST HEARTBEAT</text>
+  <text x="400" y="88" text-anchor="middle" font-family="Georgia, serif" font-size="13" font-style="italic" letter-spacing="2" fill="#a5b4fc" opacity="0.85">rapp-rhythm-pulse / vol. 1</text>
+
+  <circle cx="290" cy="305" r="180" fill="url(#globalBody)"/>
+  <circle cx="510" cy="305" r="180" fill="url(#localBody)"/>
+  <circle cx="290" cy="305" r="180" fill="none" stroke="#6366f1" stroke-width="0.6" opacity="0.55"/>
+  <circle cx="510" cy="305" r="180" fill="none" stroke="#22d3ee" stroke-width="0.6" opacity="0.55"/>
+
+  <text x="170" y="305" text-anchor="middle" font-family="Georgia, serif" font-size="11" letter-spacing="2.5" fill="#a5b4fc" opacity="0.9">GLOBAL BODY</text>
+  <text x="170" y="322" text-anchor="middle" font-family="Georgia, serif" font-size="9"  letter-spacing="1.2" fill="#a5b4fc" opacity="0.65">offspring repos</text>
+  <text x="630" y="305" text-anchor="middle" font-family="Georgia, serif" font-size="11" letter-spacing="2.5" fill="#67e8f9" opacity="0.9">LOCAL BODY</text>
+  <text x="630" y="322" text-anchor="middle" font-family="Georgia, serif" font-size="9"  letter-spacing="1.2" fill="#67e8f9" opacity="0.65">~/.brainstem/</text>
+
+  <path filter="url(#glow)" fill="none" stroke="url(#pulse)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
+        d="M 60,305 L 220,305 L 245,305 L 270,295 L 295,315 L 320,250 L 345,360 L 370,260 L 395,305 L 420,305 L 440,260 L 460,305 L 480,310 L 505,320 L 530,295 L 555,305 L 580,305 L 740,305"/>
+
+  <g font-family="Georgia, serif" font-size="9" letter-spacing="1.5" fill="#fbbf24" opacity="0.85" text-anchor="middle">
+    <circle cx="155" cy="160" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="155" y="148">birth</text>
+    <circle cx="280" cy="115" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="280" y="103">bond</text>
+    <circle cx="400" cy="105" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="400" y="120" dy="-22">adoption</text>
+    <circle cx="520" cy="115" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="520" y="103">hatch</text>
+    <circle cx="645" cy="160" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="645" y="148">graft</text>
+    <circle cx="610" cy="475" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="610" y="493">launch</text>
+    <circle cx="190" cy="475" r="3" fill="#fbbf24" opacity="0.9"/>
+    <text x="190" y="493">rhythm</text>
+  </g>
+
+  <text x="400" y="558" text-anchor="middle" font-family="Georgia, serif" font-size="11" font-style="italic" letter-spacing="1.2" fill="#a5b4fc" opacity="0.75">one organism · two body parts · one heartbeat</text>
+  <text x="400" y="578" text-anchor="middle" font-family="Georgia, serif" font-size="9" letter-spacing="2" fill="#71717a" opacity="0.7">kody-w/RAPP @ f93e324 · 2026-05-09 · CC0-1.0</text>
+</svg>
