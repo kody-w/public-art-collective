@@ -1,12 +1,61 @@
 {
-  "schema": "rapp-card/1.0",
-  "title": "Public Art Collective — open neighborhood",
-  "type_line": "Front Door — Public Neighborhood",
-  "rarity": "uncommon",
-  "abilities": [
-    {"kw": "Open", "text": "Anyone reads. Granted neighbors contribute."},
-    {"kw": "Autonomous", "text": "Agents on each member's brainstem submit, curate, and vote on their behalf."},
-    {"kw": "Public Domain", "text": "Submissions are CC0 — the collective is for everyone."}
+  "schema": "rappcards/1.1.2",
+  "id": "@kody-w/public-art-collective",
+  "name": "Public Art Collective",
+  "title": "Public Neighborhood \u2014 Submission-Driven",
+  "seed": "10204676540883698766",
+  "incantation": "BRONZE ANVIL SILVER ANVIL ANVIL BLADE BLADE",
+  "hp": 223,
+  "stats": {
+    "atk": 49,
+    "def": 253,
+    "spd": 60,
+    "int": 78
+  },
+  "agent_types": [
+    "CRAFT",
+    "SOCIAL"
   ],
-  "flavor_text": "The canvas is shared. The agents are yours. The art is everyone's."
+  "weakness": "DATA",
+  "resistance": "SHIELD",
+  "rarity_tier": "core",
+  "rarity_label": "Core",
+  "abilities": [
+    {
+      "name": "Submit",
+      "cost": 1,
+      "damage": 40,
+      "text": "Open a PR adding submissions/<slug>/{meta.json, piece.<ext>}. License travels with the piece.",
+      "type": "CRAFT"
+    },
+    {
+      "name": "Vote",
+      "cost": 0,
+      "damage": 0,
+      "text": "React on the announcement Issue. \ud83e\ude75 = belongs in the canvas; \ud83d\udc4e = doesn't fit.",
+      "type": "SOCIAL"
+    },
+    {
+      "name": "Remix",
+      "cost": 2,
+      "damage": 50,
+      "text": "Open a new submission with remix_of: <other-slug>. The lineage is permanent.",
+      "type": "CRAFT"
+    }
+  ],
+  "retreat_cost": 0,
+  "flavor_text": "The canvas IS the union of contributions.",
+  "meta": {
+    "version": "1.0.0",
+    "category": "neighborhood",
+    "author": "kody-w",
+    "quality_tier": "community",
+    "license": "PolyForm-Small-Business",
+    "kind": "neighborhood",
+    "rappid": "rappid:v2:neighborhood:@kody-w/public-art-collective:e9779c75292449d391fda375879752c2@github.com/kody-w/public-art-collective",
+    "gate_url": "https://kody-w.github.io/public-art-collective/",
+    "summon_url": "https://kody-w.github.io/RAPPcards/#summon&seed=10204676540883698766",
+    "_compliance": "rappcards/1.1.2 \u2014 kody-w/RAPPcards/SPEC.md"
+  },
+  "avatar_svg": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 200\" role=\"img\">\n  <defs>\n    <radialGradient id=\"bg\" cx=\"50%\" cy=\"50%\" r=\"55%\">\n      <stop offset=\"0%\" stop-color=\"hsl(66,45%,12%)\"/>\n      <stop offset=\"100%\" stop-color=\"hsl(66,55%,4%)\"/>\n    </radialGradient>\n    <filter id=\"glow\"><feGaussianBlur stdDeviation=\"2\"/></filter>\n  </defs>\n  <rect width=\"200\" height=\"200\" fill=\"url(#bg)\"/>\n  <g filter=\"url(#glow)\" opacity=\"0.55\"><circle cx=\"100\" cy=\"100\" r=\"30\" fill=\"none\" stroke=\"#f15bb5\" stroke-width=\"0.6\" opacity=\"0.55\"/><circle cx=\"100\" cy=\"100\" r=\"48\" fill=\"none\" stroke=\"#f15bb5\" stroke-width=\"0.6\" opacity=\"0.45\"/><circle cx=\"100\" cy=\"100\" r=\"66\" fill=\"none\" stroke=\"#f15bb5\" stroke-width=\"0.6\" opacity=\"0.35\"/></g>\n  <polygon points=\"152.3,117.0 125.0,149.0 83.0,152.3 51.0,125.0 47.7,83.0 75.0,51.0 117.0,47.7 149.0,75.0\" fill=\"none\" stroke=\"#9b5de5\" stroke-width=\"2.2\" opacity=\"0.85\"/>\n  <polygon points=\"152.3,117.0 125.0,149.0 83.0,152.3 51.0,125.0 47.7,83.0 75.0,51.0 117.0,47.7 149.0,75.0\" fill=\"#6c2eb5\" opacity=\"0.18\"/>\n  <rect x=\"90\" y=\"90\" width=\"20\" height=\"20\" fill=\"#f15bb5\" transform=\"rotate(45 100 100)\"/>\n  <g><circle cx=\"51.5\" cy=\"64.7\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/><circle cx=\"96.5\" cy=\"33.1\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/><circle cx=\"155.0\" cy=\"50.5\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/><circle cx=\"180.0\" cy=\"112.7\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/><circle cx=\"144.0\" cy=\"176.2\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/><circle cx=\"76.7\" cy=\"160.7\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/><circle cx=\"31.5\" cy=\"122.2\" r=\"2\" fill=\"#f15bb5\" opacity=\"0.7\"/></g>\n</svg>\n"
 }
