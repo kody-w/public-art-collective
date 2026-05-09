@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="hsl(66,45%,12%)"/>
+      <stop offset="100%" stop-color="hsl(66,55%,4%)"/>
+    </radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <rect width="200" height="200" fill="url(#bg)"/>
+  <g filter="url(#glow)" opacity="0.55"><circle cx="100" cy="100" r="30" fill="none" stroke="#f15bb5" stroke-width="0.6" opacity="0.55"/><circle cx="100" cy="100" r="48" fill="none" stroke="#f15bb5" stroke-width="0.6" opacity="0.45"/><circle cx="100" cy="100" r="66" fill="none" stroke="#f15bb5" stroke-width="0.6" opacity="0.35"/></g>
+  <polygon points="152.3,117.0 125.0,149.0 83.0,152.3 51.0,125.0 47.7,83.0 75.0,51.0 117.0,47.7 149.0,75.0" fill="none" stroke="#9b5de5" stroke-width="2.2" opacity="0.85"/>
+  <polygon points="152.3,117.0 125.0,149.0 83.0,152.3 51.0,125.0 47.7,83.0 75.0,51.0 117.0,47.7 149.0,75.0" fill="#6c2eb5" opacity="0.18"/>
+  <rect x="90" y="90" width="20" height="20" fill="#f15bb5" transform="rotate(45 100 100)"/>
+  <g><circle cx="51.5" cy="64.7" r="2" fill="#f15bb5" opacity="0.7"/><circle cx="96.5" cy="33.1" r="2" fill="#f15bb5" opacity="0.7"/><circle cx="155.0" cy="50.5" r="2" fill="#f15bb5" opacity="0.7"/><circle cx="180.0" cy="112.7" r="2" fill="#f15bb5" opacity="0.7"/><circle cx="144.0" cy="176.2" r="2" fill="#f15bb5" opacity="0.7"/><circle cx="76.7" cy="160.7" r="2" fill="#f15bb5" opacity="0.7"/><circle cx="31.5" cy="122.2" r="2" fill="#f15bb5" opacity="0.7"/></g>
+</svg>
