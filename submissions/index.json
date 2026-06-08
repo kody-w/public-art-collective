@@ -1,6 +1,7 @@
 {
   "schema": "rapp-art-submissions-index/1.0",
-  "neighborhood_rappid": "e9779c75-2924-49d3-91fd-a375879752c2",
+  "neighborhood_rappid": "rappid:@kody-w/public-art-collective:e9779c75292449d391fda375879752c2",
+  "_migrated_from": {"neighborhood_rappid": "e9779c75-2924-49d3-91fd-a375879752c2"},
   "submissions": [
     {
       "slug": "first-heartbeat",
