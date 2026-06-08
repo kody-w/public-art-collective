@@ -1,36 +1,49 @@
-# RAPPID_SPEC — Identity v2
+# RAPPID_SPEC — Identity (Eternity format)
 
-> **Frozen excerpt** of the canonical rappid contract (`rapp-rappid/2.0`). Bundled at planting time on 2026-05-09T12:46:24Z.
+> **Frozen excerpt** of the canonical rappid contract (`rapp-rappid/2.0`). Bundled at planting time on 2026-05-09T12:46:24Z. Updated to the Eternity format (Constitution Art. XXXIV.1, locked 2026-06-03).
 
 ## Format
 
+The one current rappid form (Constitution Art. XXXIV.1):
+
 ```
-rappid:v2:<kind>:@<owner>/<repo>:<32-hex-no-dashes>@github.com/<owner>/<repo>
+rappid:@<owner>/<slug>:<hex>
 ```
 
 Example (this neighborhood's):
 
 ```
-rappid:v2:<kind>:@kody-w/public-art-collective:<32-hex>@github.com/kody-w/public-art-collective
+rappid:@kody-w/public-art-collective:<hex>
 ```
 
-(See `../rappid.json` for the actual value.)
+No `v2:`/`v3:` prefix, no inline `<kind>:` segment, no trailing `@github.com/...` suffix. `kind` now lives in the record (a field), not the string. The hash is the identity and the join key; matching/dedup is always on the hash.
+
+(See `../card.json` / `../neighborhood.json` for the actual value.)
 
 ## Components
 
 | Part | Rule |
 |---|---|
-| Prefix `rappid:v2:` | Literal. Tells parsers this is a v2 rappid. |
-| `<kind>` | One of: `neighborhood`, `ant-farm`, `braintrust`, `workspace`, `twin`, `prototype`. |
-| `@<owner>/<repo>` | The GitHub composite identity. The `@` prefix is literal and required. |
-| `<32-hex-no-dashes>` | A UUID4 with dashes stripped — 32 lowercase hex characters. Minted ONCE at planting; permanent thereafter. |
-| `@github.com/<owner>/<repo>` | The substrate URL, suffixed for self-resolution. |
+| Prefix `rappid:` | Literal. Tells parsers this is a rappid. |
+| `@<owner>/<slug>` | The GitHub composite identity and canonical location. The `@` prefix is literal and required. `github.com/<owner>/<slug>` is the door. |
+| `<hex>` | The identity hash (lowercase hex). Existing 32-hex values are grandfathered; new identities are full 64-hex SHA-256. Minted ONCE at planting; permanent thereafter. |
+
+`kind` is recorded in `../rappid.json` / the holocard record, not in the string.
+
+### Legacy forms (read forever, never emitted)
+
+Every legacy form still resolves and is canonicalized to the form above (hash preserved) — only the consolidated form is emitted:
+
+```
+rappid:v2:<kind>:@<owner>/<repo>:<32-hex-no-dashes>@github.com/<owner>/<repo>   (v2 — legacy)
+<uuid>                                                                          (v1 — bare UUID, legacy)
+```
 
 ## Invariants (Constitution Art. XXXIV.5)
 
 1. **Permanence.** Once minted, a rappid is permanent for the lifetime of the neighborhood. Re-grafting, re-planting, kernel upgrades — none of these mint a new rappid.
 2. **Bond preservation.** The bond technique (egg → overlay → hatch back) preserves the rappid through every kernel upgrade.
-3. **Lineage chain.** A neighborhood's `parent_rappid` chains back to its ancestor (the species root for many: `rappid:v2:prototype:@rapp/origin:0b635450c04249fbb4b1bdb571044dec@github.com/kody-w/RAPP`).
+3. **Lineage chain.** A neighborhood's `parent_rappid` chains back to its ancestor (the species root for many, canonicalized to the Eternity form: `rappid:@kody-w/RAPP:0b635450c04249fbb4b1bdb571044dec`). Legacy `parent_rappid` strings are read and canonicalized; the hash is preserved.
 4. **No two organisms share a rappid.** Mint via `uuid.uuid4().hex` — collision probability is negligible.
 5. **The rappid is the seed source for the neighborhood's holocard.** `derive_seed(rappid_str)` via BLAKE2b-64 produces a deterministic 64-bit ID. Same rappid → same seed → same incantation, forever.
 
@@ -39,8 +52,9 @@ rappid:v2:<kind>:@kody-w/public-art-collective:<32-hex>@github.com/kody-w/public
 | Field | Required | Notes |
 |---|---|---|
 | `schema`       | yes | `rapp-rappid/2.0` |
-| `rappid`       | yes | The full v2 string |
-| `kind`         | yes | One of the 6 kinds above |
+| `rappid`       | yes | The Eternity string `rappid:@<owner>/<slug>:<hex>` |
+| `kind`         | yes | The record-level kind (e.g. `neighborhood`) — now carried in the record, not the string |
+| `_migrated_from` | when migrated | The prior rappid string, recorded when the top-level rappid changed |
 | `name`         | yes | Slug — matches the repo name |
 | `display_name` | yes | Human-readable |
 | `github`       | yes | `https://github.com/<owner>/<repo>` |
