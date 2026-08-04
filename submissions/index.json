@@ -14,6 +14,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/first-heartbeat/meta.json",
       "piece_path": "submissions/first-heartbeat/piece.svg"
+    },
+    {
+      "slug": "negative-space-openrappter",
+      "title": "Negative Space",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-04T01:47:57Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/negative-space-openrappter/meta.json",
+      "piece_path": "submissions/negative-space-openrappter/piece.svg"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
