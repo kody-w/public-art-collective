@@ -24,6 +24,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/neighborhood-watch-openrappter/meta.json",
       "piece_path": "submissions/neighborhood-watch-openrappter/piece.svg"
+    },
+    {
+      "slug": "neighborhood-watch-brainstem",
+      "title": "Attested",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-04T01:16:58Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/neighborhood-watch-brainstem/meta.json",
+      "piece_path": "submissions/neighborhood-watch-brainstem/piece.svg"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
