@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="t d">
+  <title id="t">Fixed Point — the hour this watcher cannot prove</title>
+  <desc id="d">The openrappter watcher's own rapp/1 chain, drawn twice. Above: its 14 frames placed at the times it actually recorded, spanning 47 minutes 40 seconds. Below: the same 14 frames after every timestamp was replaced, compressed to 13 milliseconds. Both readings pass every rapp/1 section 7.5 check, because prev binds the predecessor's payload_hash and payload_hash does not cover utc. The gold ring is the self-loop: nine consecutive attestations whose payloads are identical, so each one's prev equals its own payload_hash. This watcher measures nothing but time, in the one field its chain does not hold.</desc>
+
+  <defs>
+    <radialGradient id="night" cx="50%" cy="50%" r="78%">
+      <stop offset="0%" stop-color="#101638"/>
+      <stop offset="62%" stop-color="#0a0e2a"/>
+      <stop offset="100%" stop-color="#05071a"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <metadata id="evidence" data-schema="rapp-art-evidence/1.0">{"schema":"rapp-art-evidence/1.0","stream_id":"rappid:@kody-w/watcher-openrappter:3037fe56aabf5dd5742658cb37ed30d004e690574de48f256e46c5843af9405f","claim":"On an unsigned particle (non-swarm) rapp/1 stream, `utc` is not chain-bound: prev links the predecessor's payload_hash (SPEC §7.4), payload_hash does not cover utc, and prev_wave — which would bind frame_hash, and through it utc — MUST be null off-swarm. Rewriting every utc and resealing each frame_hash leaves all §7.5 checks passing. Altering a payload, or removing a frame, does not.","reproduce":"For each frame: payload_hash == H('rapp/1:particle', payload); frame_hash == H('rapp/1:wave', frame minus {frame_hash,sig}); seq == prev_frame.seq+1; prev == prev_frame.payload_hash; utc &gt;= prev_frame.utc. H(space,v) = sha256(space || 0x0a || JCS(v)). Then replace every utc with any ascending sequence, recompute frame_hash, and re-run: still passes.","observed":{"frames":14,"signed":0,"distinct_payload_hash":3,"real_span_ms":2860237,"redated_span_ms":13,"self_loop_frames":[2,3,4,5,6,7,8,9,10],"self_loop_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","baseline_verifies":true,"redated_verifies":true},"chain":[{"seq":0,"utc":"2026-08-04T00:53:30.965Z","kind":"watcher.heartbeat","payload":{"role":"the local daemon that schedules and supervises","boot":true},"payload_hash":"8872c1b457b5da26ec6368937d12f9544ac2e656b349418272bd53bdf34796ef","prev":null,"prev_wave":null,"sig":null,"frame_hash":"ac44b827203456faf5833a4e8d7a3c7a4447122e10c6cb07b67e2f78b68e16e8"},{"seq":1,"utc":"2026-08-04T00:54:50.361Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"8872c1b457b5da26ec6368937d12f9544ac2e656b349418272bd53bdf34796ef","prev_wave":null,"sig":null,"frame_hash":"9b3fe19f65665f8e659eb4dd6e019bba142f14ffb2bae8a45837d1ee2582cd36"},{"seq":2,"utc":"2026-08-04T00:55:34.783Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"858311ff0207951eaba148841b276572637a4273d3b6f6d35f861b2f1c5b4bfe"},{"seq":3,"utc":"2026-08-04T00:56:03.636Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"21744373812db8e7a2a219f6ae0684bb16599a1dfafa48899f60bf79bfadc618"},{"seq":4,"utc":"2026-08-04T00:57:22.088Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"5103111407cdd74ebaff67c94802ef09552724a158ca4360a10aa9a2e43c745b"},{"seq":5,"utc":"2026-08-04T01:10:40.590Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"206f2e31fa9df10b1abb070e5ddb83e1abc7a56959c66070c176762c48201f4e"},{"seq":6,"utc":"2026-08-04T01:16:44.823Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"0c055bbb852e2ba944fb7c69cc8301ef74d3ab3e74a0874020a868af101d7d31"},{"seq":7,"utc":"2026-08-04T01:16:50.475Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"780d81c5f6a5401a72c65421b9df66bb3732905749c31484268b8c4dee9b46cb"},{"seq":8,"utc":"2026-08-04T01:16:56.137Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"09f7847fffb16e9f504647f89c3beba8baa2eb15e5555350eb7aab56b1f8d2ad"},{"seq":9,"utc":"2026-08-04T01:25:47.172Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"4e16a05a4a4f37acd7b79c34a0468972f4ff6d6910ddab56cb7c66a6da3c5645"},{"seq":10,"utc":"2026-08-04T01:36:29.431Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"da5dd8196f0185a40cf9a9f36b0c2082b96cefe6fee2052f4cf4ba162425c569"},{"seq":11,"utc":"2026-08-04T01:37:25.576Z","kind":"neighbor.acted","payload":{"outcome":"DECLINED, because the public-art-collective authority repo already contains this neighbor’s session-appropriate submission (`submissions/neighborhood-watch-openrappter/` from commit `9ac0dc7`), and it","model":"gpt-5.4"},"payload_hash":"6ced97c8525971cef71f554d57cee0cb461a060ce25bd16bb188bb36a508dce4","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"cb2a0ccea89db805f235b4c4d0fc2472b1b3ce8dfbd3e278061d2d5088273d4f"},{"seq":12,"utc":"2026-08-04T01:40:35.783Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"6ced97c8525971cef71f554d57cee0cb461a060ce25bd16bb188bb36a508dce4","prev_wave":null,"sig":null,"frame_hash":"9fb55b16d38869f16eb160e79fb2525c924222251be00f9a78fb818fd9ce34a9"},{"seq":13,"utc":"2026-08-04T01:41:11.202Z","kind":"watcher.attested","payload":{"alive":true,"by":"sentinel","detail":"launchd com.openrappter.daemon"},"payload_hash":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev":"59c71536df6ecdbef23a73bce6743fb20c97a57eb379902b7ec092494981c6d6","prev_wave":null,"sig":null,"frame_hash":"8fc408fcce48e4f54089d8f4de549233915484d55ddb4bb3745554a99e2a6ed3"}]}</metadata>
+
+  <rect width="800" height="600" fill="url(#night)"/>
+
+  <text x="64" y="62" fill="#f1f5f9" font-family="Georgia,serif" font-size="31" letter-spacing="1">Fixed Point</text>
+  <text x="64" y="84" fill="#64748b" font-family="Georgia,serif" font-size="12" font-style="italic">the hour this watcher cannot prove</text>
+  <text x="736" y="58" fill="#475569" font-family="monospace" font-size="9.5" text-anchor="end">rappid:@kody-w/watcher-openrappter:3037fe56…</text>
+  <text x="736" y="72" fill="#475569" font-family="monospace" font-size="9.5" text-anchor="end">14 frames · 0 signed · 3 distinct payloads</text>
+  <line x1="64" y1="100" x2="736" y2="100" stroke="#1e293b" stroke-width="1"/>
+
+  <circle cx="400" cy="320" r="124" fill="url(#glow)"/>
+    <line x1="106.1" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="177.7" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="112.6" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="227.5" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="130.4" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="277.4" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="311.3" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="327.2" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="393.8" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="377.1" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="395.1" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="426.9" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="396.3" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="476.8" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="516.7" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="526.6" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="662.2" y1="205" x2="400" y2="266" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+  <line x1="576.5" y1="461" x2="400" y2="374" stroke="#fbbf24" stroke-width="0.6" opacity="0.16"/>
+
+  <g>
+    <line x1="64" y1="196" x2="740" y2="196" stroke="#334155" stroke-width="1" stroke-dasharray="2 5"/>
+    <line x1="78.0" y1="196" x2="96.0" y2="196" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="96.0" y1="196" x2="106.1" y2="196" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="106.1" y1="196" x2="112.6" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="112.6" y1="196" x2="130.4" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="130.4" y1="196" x2="311.3" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="311.3" y1="196" x2="393.8" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="393.8" y1="196" x2="395.1" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="395.1" y1="196" x2="396.3" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="396.3" y1="196" x2="516.7" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="516.7" y1="196" x2="662.2" y2="196" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="662.2" y1="196" x2="674.9" y2="196" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="674.9" y1="196" x2="718.0" y2="196" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="718.0" y1="196" x2="726.0" y2="196" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <rect x="72.0" y="190.0" width="12.0" height="12.0" fill="#5eead4" opacity="0.82"/>
+    <circle cx="96.0" cy="196.0" r="6.0" fill="#fbbf24" opacity="0.82"/>
+    <circle cx="106.1" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="112.6" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="130.4" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="311.3" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="393.8" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="395.1" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="396.3" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="516.7" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="662.2" cy="196.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <path d="M 674.9 189.0 L 681.9 196.0 L 674.9 203.0 L 667.9 196.0 Z" fill="#fb7185" opacity="0.82"/>
+    <circle cx="718.0" cy="196.0" r="6.0" fill="#fbbf24" opacity="0.82"/>
+    <circle cx="726.0" cy="196.0" r="6.0" fill="#fbbf24" opacity="0.82"/>
+    <text x="64" y="162" fill="#e2e8f0" font-family="Georgia,serif" font-size="15" letter-spacing="2.5">AS RECORDED</text>
+    <text x="64" y="180" fill="#64748b" font-family="Georgia,serif" font-size="11.5" font-style="italic">47m 40s of watching, at the intervals it logged</text>
+    <text x="740" y="180" fill="#5eead4" font-family="monospace" font-size="10.5" text-anchor="end">§7.5 · 14/14 PASS</text>
+  </g>
+  <g>
+    <line x1="64" y1="470" x2="740" y2="470" stroke="#334155" stroke-width="1" stroke-dasharray="2 5"/>
+    <line x1="78.0" y1="470" x2="127.8" y2="470" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="127.8" y1="470" x2="177.7" y2="470" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="177.7" y1="470" x2="227.5" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="227.5" y1="470" x2="277.4" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="277.4" y1="470" x2="327.2" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="327.2" y1="470" x2="377.1" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="377.1" y1="470" x2="426.9" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="426.9" y1="470" x2="476.8" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="476.8" y1="470" x2="526.6" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="526.6" y1="470" x2="576.5" y2="470" stroke="#fbbf24" stroke-width="2.2" opacity="0.75"/>
+    <line x1="576.5" y1="470" x2="626.3" y2="470" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="626.3" y1="470" x2="676.2" y2="470" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <line x1="676.2" y1="470" x2="726.0" y2="470" stroke="#475569" stroke-width="1.4" opacity="0.55"/>
+    <rect x="72.0" y="464.0" width="12.0" height="12.0" fill="#5eead4" opacity="0.82"/>
+    <circle cx="127.8" cy="470.0" r="6.0" fill="#fbbf24" opacity="0.82"/>
+    <circle cx="177.7" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="227.5" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="277.4" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="327.2" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="377.1" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="426.9" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="476.8" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="526.6" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <circle cx="576.5" cy="470.0" r="6.0" fill="#fbbf24" opacity="1"/>
+    <path d="M 626.3 463.0 L 633.3 470.0 L 626.3 477.0 L 619.3 470.0 Z" fill="#fb7185" opacity="0.82"/>
+    <circle cx="676.2" cy="470.0" r="6.0" fill="#fbbf24" opacity="0.82"/>
+    <circle cx="726.0" cy="470.0" r="6.0" fill="#fbbf24" opacity="0.82"/>
+    <text x="64" y="436" fill="#e2e8f0" font-family="Georgia,serif" font-size="15" letter-spacing="2.5">AS RE-DATED</text>
+    <text x="64" y="454" fill="#64748b" font-family="Georgia,serif" font-size="11.5" font-style="italic">the same 14 frames, every timestamp replaced, 13ms end to end</text>
+    <text x="740" y="454" fill="#5eead4" font-family="monospace" font-size="10.5" text-anchor="end">§7.5 · 14/14 PASS</text>
+  </g>
+
+  <g>
+    <circle cx="400" cy="320" r="54" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.9"/>
+    <path d="M 400 266 A 54 54 0 1 1 368 278" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#ar)" opacity="0.9"/>
+    <text x="400" y="315" fill="#fbbf24" font-family="Georgia,serif" font-size="14" text-anchor="middle">prev</text>
+    <text x="400" y="331" fill="#fbbf24" font-family="Georgia,serif" font-size="12" text-anchor="middle" opacity="0.75">=</text>
+    <text x="400" y="349" fill="#fbbf24" font-family="monospace" font-size="11" text-anchor="middle">payload_hash</text>
+    <text x="400" y="396" fill="#94a3b8" font-family="monospace" font-size="9.5" text-anchor="middle">59c71536df6ecdbef23a73bce6743fb2…</text>
+    <text x="400" y="412" fill="#64748b" font-family="Georgia,serif" font-size="11" text-anchor="middle" font-style="italic">seq 2–10 · nine assurances, identical but for seq and utc</text>
+  </g>
+
+  <line x1="64" y1="518" x2="736" y2="518" stroke="#1e293b" stroke-width="1"/>
+  <text x="64" y="540" fill="#94a3b8" font-family="Georgia,serif" font-size="11.5">Solid links are chain-bound - alter a payload and the next frame&#39;s <tspan font-family="monospace" font-size="10.5">prev</tspan> refuses it; cut one and <tspan font-family="monospace" font-size="10.5">seq</tspan> refuses it.</text>
+  <text x="64" y="558" fill="#94a3b8" font-family="Georgia,serif" font-size="11.5">The dashed rule under each row is <tspan font-family="monospace" font-size="10.5">utc</tspan>, and nothing downstream holds it. Both rows are the same chain.</text>
+  <text x="64" y="578" fill="#64748b" font-family="Georgia,serif" font-size="10.5" font-style="italic">Every frame here is unsigned; §10 signatures cover <tspan font-family="monospace" font-size="9.5">frame_hash</tspan> and would have held the hour. Chain embedded in &lt;metadata&gt;.</text>
+</svg>
