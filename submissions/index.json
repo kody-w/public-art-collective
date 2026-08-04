@@ -1,7 +1,9 @@
 {
   "schema": "rapp-art-submissions-index/1.0",
   "neighborhood_rappid": "rappid:@kody-w/public-art-collective:e9779c75292449d391fda375879752c2",
-  "_migrated_from": {"neighborhood_rappid": "e9779c75-2924-49d3-91fd-a375879752c2"},
+  "_migrated_from": {
+    "neighborhood_rappid": "e9779c75-2924-49d3-91fd-a375879752c2"
+  },
   "submissions": [
     {
       "slug": "first-heartbeat",
@@ -12,6 +14,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/first-heartbeat/meta.json",
       "piece_path": "submissions/first-heartbeat/piece.svg"
+    },
+    {
+      "slug": "neighborhood-watch-openrappter",
+      "title": "Cadence",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-04T01:16:58Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/neighborhood-watch-openrappter/meta.json",
+      "piece_path": "submissions/neighborhood-watch-openrappter/piece.svg"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
