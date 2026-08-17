@@ -1,0 +1,134 @@
+name: Submissions index
+
+# Validates every submissions/<slug>/ directory (schema, slug/path match, kind ↔
+# extension, required piece, license, unique slugs) on PRs, and keeps
+# submissions/index.json deterministic on main by regenerating it with
+# tools/build_index.py whenever main changes.
+#
+# Loop safety: the regenerate job's own commit touches ONLY
+# submissions/index.json, and that path is excluded below via `paths-ignore`
+# on the push trigger — so the bot's own commit never re-triggers this
+# workflow. (GITHUB_TOKEN-authored pushes also don't trigger workflow runs by
+# default, per GitHub's built-in loop protection — this is defense in depth.)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "submissions/**"
+      - "tools/**"
+      - "neighborhood.json"
+      - ".github/workflows/submissions-index.yml"
+  push:
+    branches: [main]
+    paths-ignore:
+      - "submissions/index.json"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: submissions-index-validate-${{ github.event_name }}-${{ github.ref }}-${{ github.event.pull_request.number || 'push' }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate submissions + index
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run self-tests
+        run: python3 -m unittest discover -s tools -p "test_*.py" -v
+
+      - name: Validate submissions and index freshness
+        run: python3 tools/build_index.py --check
+
+  regenerate-index:
+    name: Regenerate submissions/index.json on main
+    needs: validate
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    # Serialize writer runs so two pushes landing close together never race
+    # each other to commit submissions/index.json; queue, don't cancel.
+    concurrency:
+      group: submissions-index-writer-main
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Regenerate and push (retry, then fall back to an operator PR)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          MAX_ATTEMPTS=5
+          pushed=0
+
+          for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
+            echo "::group::Attempt ${attempt}/${MAX_ATTEMPTS}"
+            git fetch origin main
+            git checkout -B main origin/main
+            python3 tools/build_index.py --write
+
+            if git diff --quiet -- submissions/index.json; then
+              echo "submissions/index.json already current at origin/main tip."
+              pushed=1
+              echo "::endgroup::"
+              break
+            fi
+
+            git add submissions/index.json
+            git commit \
+              -m "chore(index): regenerate submissions/index.json" \
+              -m "Automated by .github/workflows/submissions-index.yml (tools/build_index.py --write)."
+
+            if git push origin HEAD:main; then
+              echo "Pushed regenerated index.json directly to main."
+              pushed=1
+              echo "::endgroup::"
+              break
+            fi
+
+            echo "Push rejected — main moved during this attempt. Refetching and retrying."
+            echo "::endgroup::"
+          done
+
+          if [ "$pushed" -ne 1 ]; then
+            echo "Direct push still unsafe after ${MAX_ATTEMPTS} attempts; opening a short operator PR instead."
+            branch="bot/regenerate-index-${{ github.run_id }}"
+            git fetch origin main
+            git checkout -B "$branch" origin/main
+            python3 tools/build_index.py --write
+
+            if git diff --quiet -- submissions/index.json; then
+              echo "submissions/index.json already current; no PR needed."
+              exit 0
+            fi
+
+            git add submissions/index.json
+            git commit -m "chore(index): regenerate submissions/index.json"
+            git push origin "$branch" --force-with-lease
+
+            gh pr create \
+              --title "chore(index): regenerate submissions/index.json" \
+              --body "Automated regeneration (tools/build_index.py --write) could not push directly to main after ${MAX_ATTEMPTS} attempts. Opening for operator review per specs/ANTIPATTERNS.md §9 (operator-mediated merges)." \
+              --base main \
+              --head "$branch" || echo "PR may already exist for this run; continuing."
+          fi
