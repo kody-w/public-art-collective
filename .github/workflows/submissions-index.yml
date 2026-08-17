@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate submissions + index
+    name: Validate submissions
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -44,8 +44,14 @@ jobs:
       - name: Run self-tests
         run: python3 -m unittest discover -s tools -p "test_*.py" -v
 
-      - name: Validate submissions and index freshness
-        run: python3 tools/build_index.py --check
+      - name: Validate every submission
+        # --validate (not --check): a submission-only PR is *expected* to
+        # leave index.json stale until regenerate-index runs after merge.
+        # Gating this job on index freshness would deadlock regenerate-index
+        # (which `needs: validate`) forever, since it can never run to fix
+        # the staleness that's blocking it from running. --check (which also
+        # asserts freshness) stays available for operators/tests locally.
+        run: python3 tools/build_index.py --validate
 
   regenerate-index:
     name: Regenerate submissions/index.json on main
@@ -124,7 +130,10 @@ jobs:
 
             git add submissions/index.json
             git commit -m "chore(index): regenerate submissions/index.json"
-            git push origin "$branch" --force-with-lease
+            # branch name is unique per run (github.run_id), so this can
+            # never collide with prior history — a plain push is sufficient
+            # and avoids force-pushing (no history rewrite).
+            git push -u origin "$branch"
 
             gh pr create \
               --title "chore(index): regenerate submissions/index.json" \

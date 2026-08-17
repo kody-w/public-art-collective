@@ -288,10 +288,52 @@ class TestMainCLI(BuildIndexTestCase):
             doc = json.load(f)
         self.assertEqual({e["slug"] for e in doc["submissions"]}, {"alpha", "beta"})
 
+    def test_validate_passes_new_valid_submission_while_check_reports_stale(self):
+        # This is exactly the Dada-PR scenario: a new slug lands with no
+        # regeneration of index.json. --validate must pass (every submission
+        # is individually valid); --check must still catch the staleness.
+        write_submission(self.submissions_dir, "alpha")
+        self.assertEqual(self.run_main("--write"), 0)
+
+        write_submission(self.submissions_dir, "dada-new-piece")
+
+        self.assertEqual(
+            self.run_main("--validate"), 0,
+            "--validate must not fail merely because index.json is stale",
+        )
+        self.assertEqual(
+            self.run_main("--check"), 1,
+            "--check must still fail while index.json is stale",
+        )
+        # --validate must never write the file, regardless of staleness.
+        with open(self.index_path(), encoding="utf-8") as f:
+            doc = json.load(f)
+        self.assertEqual({e["slug"] for e in doc["submissions"]}, {"alpha"})
+
+    def test_validate_passes_even_with_no_index_file_at_all(self):
+        write_submission(self.submissions_dir, "alpha")
+        self.assertFalse(os.path.isfile(self.index_path()))
+        self.assertEqual(self.run_main("--validate"), 0)
+        self.assertFalse(os.path.isfile(self.index_path()), "--validate must never create index.json")
+
+    def test_invalid_submission_fails_both_validate_and_check(self):
+        write_submission(self.submissions_dir, "alpha")
+        self.run_main("--write")
+        write_submission(self.submissions_dir, "beta", meta_overrides={"license": "MIT"})
+
+        self.assertEqual(self.run_main("--validate"), 1)
+        self.assertEqual(self.run_main("--check"), 1)
+
     def test_main_exits_nonzero_on_invalid_submission(self):
         write_submission(self.submissions_dir, "alpha", meta_overrides={"license": "MIT"})
         self.assertEqual(self.run_main("--check"), 1)
         self.assertEqual(self.run_main("--write"), 1)
+        self.assertEqual(self.run_main("--validate"), 1)
+
+    def test_validate_and_check_are_mutually_exclusive(self):
+        write_submission(self.submissions_dir, "alpha")
+        with self.assertRaises(SystemExit):
+            self.run_main("--validate", "--check")
 
 
 class TestRealRepoFixture(unittest.TestCase):

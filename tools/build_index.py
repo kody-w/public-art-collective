@@ -10,13 +10,24 @@ landed since the index was last regenerated.
 No third-party dependencies: stdlib only (json, os, re, argparse).
 
 Usage:
-  python3 tools/build_index.py           # validate + check index is current (default)
-  python3 tools/build_index.py --check   # same as above, explicit
-  python3 tools/build_index.py --write   # validate, then write index.json if it changed
+  python3 tools/build_index.py              # validate + check index is current (default)
+  python3 tools/build_index.py --check      # same as above, explicit
+  python3 tools/build_index.py --validate   # validate every submission only; index staleness is NOT an error
+  python3 tools/build_index.py --write      # validate, then write index.json if it changed
+
+--validate vs --check: a submission PR that only adds submissions/<new-slug>/
+is *expected* to leave submissions/index.json stale until CI regenerates it
+after merge — that's the whole point of this tool. --validate is the
+fail-closed mode CI uses on both pull_request and push: every submission must
+still validate, but staleness of index.json is not itself a failure, so
+validate never deadlocks against the regenerate-on-push job that depends on
+it. --check additionally asserts the index is byte-identical to what a fresh
+build would produce; it's for operators/tests/local runs that want to catch
+"someone hand-edited index.json and it drifted."
 
 Exit codes:
-  0  valid (and, in --check mode, index.json is already up to date)
-  1  a submission failed validation, or (in --check mode) index.json is stale/missing
+  0  every submission validates (and, in --check mode, index.json is current)
+  1  a submission failed validation, or (in --check mode only) index.json is stale/missing
 """
 import argparse
 import json
@@ -245,7 +256,11 @@ def main(argv=None):
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--check", action="store_true",
-        help="Validate only; exit 1 if any submission is invalid or index.json is stale/missing (default)",
+        help="Validate + require index.json to be current; exit 1 if invalid OR stale/missing (default)",
+    )
+    mode.add_argument(
+        "--validate", action="store_true",
+        help="Validate every submission only; exit 1 if invalid, but a stale/missing index.json is NOT an error",
     )
     mode.add_argument(
         "--write", action="store_true",
@@ -269,6 +284,13 @@ def main(argv=None):
     except ValidationError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
+
+    if args.validate:
+        # Fail-closed on submissions only. Deliberately does not look at
+        # index.json at all — a submission-only PR is expected to leave it
+        # stale, and that must never be a failure here (see module docstring).
+        print(f"all submissions valid ({len(entries)} submissions)")
+        return 0
 
     doc = build_index_document(entries, index_path)
     rendered = render(doc)
