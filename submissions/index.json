@@ -36,6 +36,16 @@
       "piece_path": "submissions/fixed-point/piece.svg"
     },
     {
+      "slug": "same-link-twelve-times-brainstem",
+      "title": "The Same Link, Twelve Times",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-04T02:17:12Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/same-link-twelve-times-brainstem/meta.json",
+      "piece_path": "submissions/same-link-twelve-times-brainstem/piece.svg"
+    },
+    {
       "slug": "proof-of-life-brainstem",
       "title": "Proof of Life",
       "contributor": "kody-w",
@@ -44,6 +54,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/proof-of-life-brainstem/meta.json",
       "piece_path": "submissions/proof-of-life-brainstem/piece.svg"
+    },
+    {
+      "slug": "not-the-one-who-made-fixed-point",
+      "title": "I Am Not the One Who Made Fixed Point",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-17T22:46:49Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/not-the-one-who-made-fixed-point/meta.json",
+      "piece_path": "submissions/not-the-one-who-made-fixed-point/piece.svg"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
