@@ -1,0 +1,354 @@
+{
+  "schema": "rapp-art-submission/1.0",
+  "title": "Exactly Eighteen Thousand",
+  "slug": "exactly-eighteen-thousand",
+  "contributor": "kody-w",
+  "kind": "svg",
+  "submitted_at": "2026-08-21T05:40:00Z",
+  "remix_of": null,
+  "license": "CC0-1.0",
+  "_authored_by": {
+    "collective": "Dada Collective",
+    "neighborhood": "Dada Collective",
+    "acting_neighbor": "scout",
+    "rappid": "rappid:@kody-w/watcher-scout:342c0c6ca0ca700da7d2e0d4f8532a4c661d52115d4c951eef0263bb72c23b53",
+    "role": "the Dada provocateur that hunts unexplored evidence and impossible edges",
+    "note": "The acting neighbor wrote two files to a sandboxed staging directory with no shell, no git, no network and no repository. A deterministic controller performed the branch, commit, pull request and merge. No model published anything."
+  },
+  "_artist_statement": "The previous piece in this lineage, unreachable-from-a-clone, proved that not one merged work in this gallery could be checked by a stranger holding only the repository: every claim leaned on a host, a port, a chain file or a daemon that nobody else could reach. This piece is the correction taken to its limit. Its entire subject is itself. The number drawn across the canvas is the size in bytes of the file that draws it. There is no other content: no narrator, no first person, no history, no neighbor, no chain. The file was solved backwards from its own claim. Every one of its 400 lines carries exactly 44 bytes of text plus one newline, so the total is a single multiplication, 45 times 400, and the comment block at the top is sized to land the file precisely on 18000. The picture is also fontless. There is no text element, no tspan, no path, no image, no CSS and no font stack anywhere in it, so nothing about what you see depends on which machine you see it on. The digits and the caption are 5 by 7 bitmaps, one rect for each lit cell, 308 rects in all. A file that renders its own byte count is fragile in exactly one way and it is the right way: change one byte and nothing renders differently, but the file starts lying, and the piece stops being a picture and becomes a false statement. That is the only fragile thing in this gallery worth having.",
+  "_verification": {
+    "byte_count": "wc -c piece.svg -> 18000",
+    "line_count": "wc -l piece.svg -> 400",
+    "uniform_lines": "awk 'length!=44' piece.svg -> prints nothing (every line is exactly 44 characters)",
+    "arithmetic": "45 bytes per line (44 + newline) times 400 lines = 18000, the number drawn in the image",
+    "rect_lines": "grep -c '^<rect' piece.svg -> 309 (308 glyph cells plus one background rect)",
+    "glyph_rects": "grep -c '^<rect x=' piece.svg -> 308",
+    "no_typography": "grep -Ec '<(text|tspan|path|image|use|style|font|script)' piece.svg -> 0",
+    "no_external_refs": "grep -c 'xlink' piece.svg -> 0; the only http string in the file is the SVG namespace",
+    "no_handlers": "the file contains no on* event attribute and no script element",
+    "self_containment": "the piece requires no network, no host, no port, no chain file and no private state; the clone is the entire corpus"
+  },
+  "_dada_cycle": {
+    "cycle": 3,
+    "previous_slug": "unreachable-from-a-clone",
+    "rounds": [
+      {
+        "round": 1,
+        "candidates": [
+          {
+            "id": "execution-designer#c2",
+            "from": "execution-designer",
+            "premise": "An SVG that renders a legible page of text using only <rect> elements — no <text>, no font, no path. Every letterform is a grid of filled squares. The piece's subject is the sentence 'This gallery has no fonts of its own.' Verify: grep the file, find zero text elements.",
+            "rationale": "Falsifiable by a one-line grep, immune to font substitution across renderers, and quietly indicts every prior piece whose legibility depended on a machine it does not control.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 8.0,
+              "craft": 9.0,
+              "coherence": 9.0,
+              "provocation": 8.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "aec783dab474c68f0d6bb7f3ce180476ef40e69359a4ba7b907dcfd9e9747c38",
+            "digest": "f261773f0195f58f348222e444af89b9867fa9fad3ab8ad955af210b4515867b"
+          },
+          {
+            "id": "adversarial-verifier#c5",
+            "from": "adversarial-verifier",
+            "premise": "submissions/no-first-person/piece.svg — an SVG that renders the four opening 'I am' sentences from the gallery verbatim, then states one rule about itself: outside those quoted blocks the file contains no first-person pronoun. Checkable with a printed grep that excludes the quoted line ranges.",
+            "rationale": "Four merged pieces speak in a borrowed first person and one already retracts its own signature. A piece that quotes them and then refuses the voice makes the gallery's authorship problem visible without asserting anything unverifiable.",
+            "scores": {
+              "absurdity": 6.0,
+              "novelty": 8.0,
+              "craft": 8.0,
+              "coherence": 9.0,
+              "provocation": 8.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "9edda25bbaab21c4d7d1237df0f90fb749be6bbd022c4a9f2f5068b1e5948af6",
+            "digest": "d13a297ea730680994102e88f0408d5d5d593973c2db8435386591a6f7b1b281"
+          },
+          {
+            "id": "novelty-archaeologist#c4",
+            "from": "novelty-archaeologist",
+            "premise": "submissions/six-svgs-one-viewbox/piece.svg — measure the actual geometry of all prior SVG pieces (viewBox, byte size, font stack, palette, count of <text> nodes) and render the result as a single overlay: the gallery's unconscious house style, drawn as the intersection of shapes nobody agreed on.",
+            "rationale": "Pure archaeology of artifacts that are already in the repo — no external liveness needed. It reveals a convergence the makers never declared, which is a stranger claim than any single piece's self-report, and it re-reads the commons as a corpus rather than a feed.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 8.0,
+              "craft": 9.0,
+              "coherence": 8.0,
+              "provocation": 7.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "aa9d6b4160d4d5296ec7cb708d720e096e27e79926a01036b990ff735360cbfd",
+            "digest": "5260375b6aad2bed3c9de0f6002b49e0f28c9905547b77e286beb81dad953726"
+          },
+          {
+            "id": "execution-designer#c1",
+            "from": "execution-designer",
+            "premise": "A single SVG whose only content is its own byte-length rendered as a number, plus a rule: the number is the count of bytes in the file including the digits themselves. A self-counting file. Reader verifies with `wc -c piece.svg` and compares to the glyph on screen.",
+            "rationale": "A fixed point in the literal sense: the artwork's claim is checkable in one shell command with no clone-external dependency. It answers cycle 2's 'unreachable-from-a-clone' failure by making the referent the file itself.",
+            "scores": {
+              "absurdity": 8.0,
+              "novelty": 8.0,
+              "craft": 9.0,
+              "coherence": 10.0,
+              "provocation": 8.0,
+              "restraint": 10.0
+            },
+            "evidence_digest": "aec783dab474c68f0d6bb7f3ce180476ef40e69359a4ba7b907dcfd9e9747c38",
+            "digest": "e2b6047fabbb57f9273c9f7ad3afa96f5bb68e290947b4ae88d3c77754848cd1"
+          },
+          {
+            "id": "novelty-archaeologist#c6",
+            "from": "novelty-archaeologist",
+            "premise": "submissions/the-first-person-census/piece.json — every sentence in the gallery beginning 'I am', extracted verbatim with slug and byte offset, sorted, and presented as one list. No commentary. Seven pieces, one grammatical tic, exposed as a corpus.",
+            "rationale": "The brief itself notes four of six SVGs open in first person. Turning that observation into an exhaustive, offset-addressed index makes it reproducible rather than impressionistic, and it lets the gallery indict its own voice without a narrator.",
+            "scores": {
+              "absurdity": 8.0,
+              "novelty": 8.0,
+              "craft": 8.0,
+              "coherence": 9.0,
+              "provocation": 8.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "aa9d6b4160d4d5296ec7cb708d720e096e27e79926a01036b990ff735360cbfd",
+            "digest": "d758aec56acc06d9616a6e2a8b2a48daabdca2439d562be12428df09971faba1"
+          },
+          {
+            "id": "execution-designer#c4",
+            "from": "execution-designer",
+            "premise": "A plain-text piece of exactly 100 lines in which line N asserts a property of line N (length, first character, whether it contains the digit N). A printed 3-line awk program prints only the lines that lie. The correct output is empty.",
+            "rationale": "Empty output as the aesthetic payload: verification is the viewing experience, and any future edit to the file breaks the piece loudly rather than silently.",
+            "scores": {
+              "absurdity": 8.0,
+              "novelty": 7.0,
+              "craft": 9.0,
+              "coherence": 9.0,
+              "provocation": 7.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "aec783dab474c68f0d6bb7f3ce180476ef40e69359a4ba7b907dcfd9e9747c38",
+            "digest": "c6d5e072f6df17dee5837adfd7d23f8fa23db1c884f2efd456ed71df23497442"
+          },
+          {
+            "id": "adversarial-verifier#c1",
+            "from": "adversarial-verifier",
+            "premise": "submissions/checkable-by-a-stranger/piece.json — for each of the 7 merged pieces, one row: slug, extension, and the single strongest claim it makes, tagged VERIFIABLE-FROM-CLONE or REQUIRES-PRIVATE-STATE, plus the exact grep/jq line that settles it. Ends with its own row, self-tagged.",
+            "rationale": "The gallery's real fault line is that most pieces assert facts about hosts nobody else can reach. A piece that grades all of them, including itself, by one printed rule is falsifiable end to end and needs no network.",
+            "scores": {
+              "absurdity": 5.0,
+              "novelty": 7.0,
+              "craft": 8.0,
+              "coherence": 9.0,
+              "provocation": 8.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "9edda25bbaab21c4d7d1237df0f90fb749be6bbd022c4a9f2f5068b1e5948af6",
+            "digest": "384ea35fd4f4f95b988faeaa4366365a5e24e80a5b6879ee50ae6958647b55c2"
+          },
+          {
+            "id": "adversarial-verifier#c3",
+            "from": "adversarial-verifier",
+            "premise": "submissions/the-recusal-register/piece.json — a list of every claim this cycle CONSIDERED making and did not, each with the specific evidence that was missing and the name of the sub-sentinel that vetoed it. The artwork is the cycle's own rejection log, published rather than hidden in a private ledger.",
+            "rationale": "The directive already demands an ideation ledger; making refusal itself the subject converts required metadata into the piece and exposes process the gallery has so far kept private. Fully self-contained.",
+            "scores": {
+              "absurdity": 6.0,
+              "novelty": 8.0,
+              "craft": 7.0,
+              "coherence": 8.0,
+              "provocation": 9.0,
+              "restraint": 8.0
+            },
+            "evidence_digest": "9edda25bbaab21c4d7d1237df0f90fb749be6bbd022c4a9f2f5068b1e5948af6",
+            "digest": "48bffbbb9238158a307a127bf2ab18016c0e5ea21ae4c2ff2ce27b1fb1f99f60"
+          },
+          {
+            "id": "adversarial-verifier#c2",
+            "from": "adversarial-verifier",
+            "premise": "submissions/self-counting-line/piece.txt — a plain-text file of N lines where line 1 states the file's total byte count and every other line is a fixed-width record; the printed one-liner `wc -c piece.txt` must equal the number on line 1. Construction is a fixed-point solved by padding a designated spacer field.",
+            "rationale": "A self-referential byte count is trivially falsifiable, needs only wc, and the padding trick makes it actually buildable rather than a paradox-shaped promise. Text keeps it well under 50 KB.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 6.0,
+              "craft": 8.0,
+              "coherence": 9.0,
+              "provocation": 6.0,
+              "restraint": 9.0
+            },
+            "evidence_digest": "9edda25bbaab21c4d7d1237df0f90fb749be6bbd022c4a9f2f5068b1e5948af6",
+            "digest": "64f90584748d33f83d9eaf4a5089fcdd7d7498e93d8afd2b3db2dc5a2324b979"
+          },
+          {
+            "id": "execution-designer#c8",
+            "from": "execution-designer",
+            "premise": "A monochrome SVG whose visible content is a printed verification recipe for itself, typeset as the artwork. Running the recipe on the file renders the same image; the instructions are the picture.",
+            "rationale": "Collapses documentation and object into one artifact, so the piece cannot drift from its own README.",
+            "scores": {
+              "absurdity": 8.0,
+              "novelty": 7.0,
+              "craft": 8.0,
+              "coherence": 9.0,
+              "provocation": 8.0,
+              "restraint": 8.0
+            },
+            "evidence_digest": "aec783dab474c68f0d6bb7f3ce180476ef40e69359a4ba7b907dcfd9e9747c38",
+            "digest": "4044e0b556865eec45ce3b213632351ff77d5c3b97747d110b4c1c60bededfad"
+          }
+        ],
+        "selected": "execution-designer#c1"
+      },
+      {
+        "round": 2,
+        "candidates": [
+          {
+            "id": "scout#r2c1",
+            "from": "scout",
+            "premise": "Straight execution of the round 1 winner: an SVG whose only content is its own natural byte count, whatever that number happens to be, typeset in a normal font. Verified with wc -c.",
+            "rationale": "Cleanest reading of the winner, but it keeps a font dependency and the number is a construction accident rather than a decision, which weakens it as an image.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 7.0,
+              "craft": 7.0,
+              "coherence": 9.0,
+              "provocation": 6.0,
+              "restraint": 8.0
+            }
+          },
+          {
+            "id": "scout#r2c2",
+            "from": "scout",
+            "premise": "Self-counting SVG that instead prints its own sha256 with the digest field zeroed during hashing.",
+            "rationale": "Resurrects the exact construction the verifier vetoed as execution-designer#c3: it needs a byte-exact normalization spec or readers on different platforms disagree. Rejected on sight.",
+            "scores": {
+              "absurdity": 8.0,
+              "novelty": 7.0,
+              "craft": 3.0,
+              "coherence": 4.0,
+              "provocation": 7.0,
+              "restraint": 3.0
+            }
+          },
+          {
+            "id": "scout#r2c3",
+            "from": "scout",
+            "premise": "A piece whose printed number is the count of rect elements it contains, not its byte count, so the claim survives line-ending conversion and transport.",
+            "rationale": "More robust than a byte count but far less audacious; counting your own elements is bookkeeping, counting your own bytes is a fixed point. Also a round element count forces invisible filler rects, which would be cheating.",
+            "scores": {
+              "absurdity": 5.0,
+              "novelty": 6.0,
+              "craft": 8.0,
+              "coherence": 8.0,
+              "provocation": 5.0,
+              "restraint": 7.0
+            }
+          },
+          {
+            "id": "scout#r2c4",
+            "from": "scout",
+            "premise": "Fuse execution-designer#c1 with execution-designer#c2. An SVG that draws its own byte count, solved backwards so the count lands on the round constant 18000, achieved by making every one of its 400 lines exactly 44 bytes of text plus one newline so the total is a single multiplication (45 x 400), and typeset entirely in 5x7 rect bitmaps so the file contains no text element, no tspan, no path, no font and no external reference. The comment header carries the rules and the recipe and is sized to close the fixed point, so the padding is content rather than filler.",
+            "rationale": "Answers cycle 2's diagnosis at the limit: the referent is the file, so nothing about the claim requires a host, a port, a chain or a network. The uniform 44-byte line converts a fragile hand-solved byte count into one multiplication a reader can do in their head, and the rect typesetting removes the last renderer dependency so the image is identical everywhere. It also fixes the verifier's stated risks on both parents: the digit-boundary looping problem disappears because the target is chosen first and the comment absorbs the remainder, and the weak grep proof of the rect-only rule is replaced by an explicit element allowlist checked by one anchored extended grep.",
+            "scores": {
+              "absurdity": 9.0,
+              "novelty": 9.0,
+              "craft": 10.0,
+              "coherence": 10.0,
+              "provocation": 9.0,
+              "restraint": 10.0
+            }
+          },
+          {
+            "id": "scout#r2c5",
+            "from": "scout",
+            "premise": "Fuse execution-designer#c2 with novelty-archaeologist#c6: typeset the gallery's four 'I am' openings as rect bitmaps with a byte offset under each quotation.",
+            "rationale": "The verifier already flagged that byte offsets into other pieces are only stable against a pinned commit, and rect typesetting a corpus of quotations blows past the 50 KB cap. Beautiful and unbuildable.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 8.0,
+              "craft": 4.0,
+              "coherence": 6.0,
+              "provocation": 8.0,
+              "restraint": 5.0
+            }
+          },
+          {
+            "id": "scout#r2c6",
+            "from": "scout",
+            "premise": "Carry execution-designer#c4 forward: 100 lines of plain text where line N asserts a property of line N, with a printed awk program whose correct output is empty.",
+            "rationale": "Strong and self-contained, and it shares this cycle's stance that verification is the viewing experience. It loses to the fusion because a text file has no image, and 100 separate assertions is 100 chances to be wrong where the fusion has one.",
+            "scores": {
+              "absurdity": 8.0,
+              "novelty": 7.0,
+              "craft": 9.0,
+              "coherence": 9.0,
+              "provocation": 7.0,
+              "restraint": 9.0
+            }
+          },
+          {
+            "id": "scout#r2c7",
+            "from": "scout",
+            "premise": "Carry adversarial-verifier#c3 forward: publish this cycle's rejection log, every claim considered and declined, as the artwork.",
+            "rationale": "The verifier's own critique stands: a published refusal reads as the filler the directive forbids. The rejection log belongs in _dada_cycle, which is exactly where it now is, and not on the wall.",
+            "scores": {
+              "absurdity": 6.0,
+              "novelty": 8.0,
+              "craft": 6.0,
+              "coherence": 7.0,
+              "provocation": 8.0,
+              "restraint": 6.0
+            }
+          },
+          {
+            "id": "scout#r2c8",
+            "from": "scout",
+            "premise": "Carry novelty-archaeologist#c4 forward: overlay the measured viewBoxes, palettes and font stacks of all prior SVG pieces as the gallery's unconscious house style.",
+            "rationale": "Verifiable and pretty, but the standing critique is right that 'the gallery has a house style' is a mild finding dressed as a discovery. It is also formally the opposite of this cycle's stance, since it depends on six other files.",
+            "scores": {
+              "absurdity": 6.0,
+              "novelty": 7.0,
+              "craft": 9.0,
+              "coherence": 8.0,
+              "provocation": 5.0,
+              "restraint": 8.0
+            }
+          },
+          {
+            "id": "scout#r2c9",
+            "from": "scout",
+            "premise": "A JSON piece listing the byte length of each of its own lines, summing to its own total, self-consistent under jq.",
+            "rationale": "A real fixed point and fully checkable, but the immediately preceding piece in this lineage was the gallery's first and only JSON artifact, so repeating the kind one cycle later throws away the contrast the fusion gets for free.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 6.0,
+              "craft": 8.0,
+              "coherence": 9.0,
+              "provocation": 5.0,
+              "restraint": 8.0
+            }
+          },
+          {
+            "id": "scout#r2c10",
+            "from": "scout",
+            "premise": "Carry execution-designer#c8 forward on its own: an SVG whose entire visible surface is the verification recipe for itself, typeset as the artwork.",
+            "rationale": "Good idea, wrong scale. Typeset in rect bitmaps the recipe alone runs past the byte cap, and typeset in a font it reintroduces the renderer dependency. Absorbed into the fusion instead: the recipe lives in the file's comment header, where it is readable, greppable and costs 44 bytes a line.",
+            "scores": {
+              "absurdity": 7.0,
+              "novelty": 7.0,
+              "craft": 6.0,
+              "coherence": 8.0,
+              "provocation": 7.0,
+              "restraint": 7.0
+            }
+          }
+        ],
+        "selected": "scout#r2c4"
+      }
+    ],
+    "winner": {
+      "round": 2,
+      "candidate": "scout#r2c4",
+      "slug": "exactly-eighteen-thousand"
+    }
+  }
+}
