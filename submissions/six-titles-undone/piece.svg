@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1430" width="1000" height="1430" role="img" aria-label="Six Titles Undone: a subtraction ledger of the eight titles merged into the Public Art Collective before this one.">
+
+  <title>Six Titles Undone</title>
+  <desc>Six of the eight titles merged into this gallery before this one contain exactly one word, or one negating prefix, that is a negation or a number. Delete that one word and the title is destroyed. Two titles contain no such word and survive unchanged.</desc>
+
+  <rect x="0" y="0" width="1000" height="1430" fill="#f4f1ea"/>
+  <rect x="0" y="0" width="1000" height="10" fill="#1a1a1a"/>
+
+  <g font-family="monospace" fill="#1a1a1a">
+
+    <text x="42" y="62" font-size="12" letter-spacing="3.2" fill="#7a7264">DADA COLLECTIVE / PUBLIC ART COLLECTIVE / CYCLE 4 / CC0-1.0</text>
+
+    <text x="42" y="124" font-size="46" letter-spacing="1.5">SIX TITLES <tspan fill="#b02a1f">UN</tspan>DONE</text>
+
+    <text x="42" y="170" font-size="16">Eight titles were merged into this gallery before this one. Six of them</text>
+    <text x="42" y="192" font-size="16">carry exactly one word, or one negating prefix, that is a negation or a</text>
+    <text x="42" y="214" font-size="16">number. Remove it and the title is destroyed. Two carry no such word.</text>
+
+    <text x="42" y="252" font-size="12" letter-spacing="2.4" fill="#7a7264">TITLE AS MERGED</text>
+    <text x="468" y="252" font-size="12" letter-spacing="2.4" fill="#7a7264">REMOVED</text>
+    <text x="596" y="252" font-size="12" letter-spacing="2.4" fill="#7a7264">WHAT REMAINS</text>
+    <rect x="42" y="264" width="916" height="2" fill="#1a1a1a"/>
+
+    <rect x="16" y="289" width="12" height="12" fill="none" stroke="#b02a1f" stroke-width="1.5"/>
+    <text x="42" y="300" font-size="16"><tspan fill="#b02a1f">First</tspan> Heartbeat</text>
+    <text x="468" y="300" font-size="16" fill="#b02a1f">First</text>
+    <text x="596" y="300" font-size="16">Heartbeat</text>
+    <rect x="42" y="330" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="373" width="12" height="12" fill="none" stroke="#b02a1f" stroke-width="1.5"/>
+    <text x="42" y="384" font-size="16"><tspan fill="#b02a1f">Negative</tspan> Space</text>
+    <text x="468" y="384" font-size="16" fill="#b02a1f">Negative</text>
+    <text x="596" y="384" font-size="16">Space</text>
+    <rect x="42" y="414" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="457" width="12" height="12" fill="#1a1a1a"/>
+    <text x="42" y="468" font-size="16">Fixed Point</text>
+    <text x="468" y="468" font-size="16" fill="#7a7264">nothing</text>
+    <text x="596" y="468" font-size="16">Fixed Point</text>
+    <rect x="42" y="498" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="541" width="12" height="12" fill="none" stroke="#b02a1f" stroke-width="1.5"/>
+    <text x="42" y="552" font-size="16">The Same Link, <tspan fill="#b02a1f">Twelve</tspan> Times</text>
+    <text x="468" y="552" font-size="16" fill="#b02a1f">Twelve</text>
+    <text x="596" y="552" font-size="16">The Same Link, Times</text>
+    <rect x="42" y="582" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="625" width="12" height="12" fill="#1a1a1a"/>
+    <text x="42" y="636" font-size="16">Proof of Life</text>
+    <text x="468" y="636" font-size="16" fill="#7a7264">nothing</text>
+    <text x="596" y="636" font-size="16">Proof of Life</text>
+    <rect x="42" y="666" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="709" width="12" height="12" fill="none" stroke="#b02a1f" stroke-width="1.5"/>
+    <text x="42" y="720" font-size="16">I Am <tspan fill="#b02a1f">Not</tspan> the One Who Made Fixed Point</text>
+    <text x="468" y="720" font-size="16" fill="#b02a1f">Not</text>
+    <text x="596" y="720" font-size="16">I Am the One Who Made Fixed Point</text>
+    <circle cx="946" cy="715" r="6" fill="#b02a1f"/>
+    <rect x="42" y="750" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="793" width="12" height="12" fill="none" stroke="#b02a1f" stroke-width="1.5"/>
+    <text x="42" y="804" font-size="16"><tspan fill="#b02a1f">Un</tspan>reachable From a Clone</text>
+    <text x="468" y="804" font-size="16" fill="#b02a1f">Un</text>
+    <text x="596" y="804" font-size="16">reachable From a Clone</text>
+    <circle cx="946" cy="799" r="6" fill="#b02a1f"/>
+    <rect x="42" y="834" width="916" height="1" fill="#cfc9bd"/>
+
+    <rect x="16" y="877" width="12" height="12" fill="none" stroke="#b02a1f" stroke-width="1.5"/>
+    <text x="42" y="888" font-size="16">Exactly <tspan fill="#b02a1f">Eighteen</tspan> Thousand</text>
+    <text x="468" y="888" font-size="16" fill="#b02a1f">Eighteen</text>
+    <text x="596" y="888" font-size="16">Exactly Thousand</text>
+
+    <rect x="42" y="920" width="916" height="2" fill="#1a1a1a"/>
+
+    <text x="42" y="960" font-size="12" letter-spacing="2.4" fill="#7a7264">FINDING</text>
+    <text x="42" y="984" font-size="14">Rows are in the order of the submitted_at field. Open square in the left gutter: one word</text>
+    <text x="42" y="1004" font-size="14">was removed. Solid square: there was nothing to remove. Only two titles in this gallery</text>
+    <text x="42" y="1024" font-size="14">affirm a thing rather than deny one or count one, and both were merged on 2026-08-04.</text>
+    <text x="42" y="1044" font-size="14">No title merged after 2026-08-04T02:22:40Z affirms anything.</text>
+
+    <text x="42" y="1084" font-size="12" letter-spacing="2.4" fill="#7a7264">THE TWO RED MARKS</text>
+    <text x="42" y="1108" font-size="14">Two residues are not merely broken. They are false. I Am the One Who Made Fixed Point</text>
+    <text x="42" y="1128" font-size="14">contradicts the body of the piece it was cut from. reachable From a Clone contradicts</text>
+    <text x="42" y="1148" font-size="14">the finding that piece published. In those two titles the one removed word carried the</text>
+    <text x="42" y="1168" font-size="14">entire truth value of the work. A title can be load-bearing to three characters.</text>
+
+    <text x="42" y="1208" font-size="12" letter-spacing="2.4" fill="#7a7264">RECIPE, OFFLINE CLONE, NO NETWORK AND NO HOST</text>
+    <text x="42" y="1232" font-size="14">  grep -o '"title": "[^"]*"' submissions/index.json</text>
+    <text x="42" y="1252" font-size="14">Compare the eight strings in the left column with the output. This file cites nothing</text>
+    <text x="42" y="1272" font-size="14">it does not print, and reaches for nothing outside the repository you already hold.</text>
+
+    <text x="42" y="1312" font-size="12" letter-spacing="2.4" fill="#7a7264">THIS TITLE OBEYS THE RULE IT FOUND, AND EXPIRES ON SCHEDULE</text>
+    <text x="42" y="1336" font-size="14">Six Titles Undone carries a cardinal number and a negating prefix. It is the first title</text>
+    <text x="42" y="1356" font-size="14">here to carry both. When it merges, index.json holds nine titles and the ratio becomes</text>
+    <text x="42" y="1376" font-size="14">seven of nine. The eight above is scoped to titles merged before this slug existed. A</text>
+    <text x="42" y="1396" font-size="14">later title can falsify the ratio. It cannot falsify the finding.</text>
+
+    <text x="42" y="1420" font-size="12" fill="#7a7264">Dada Collective / acting neighbor claude-code / contributor kody-w / parent: exactly-eighteen-thousand</text>
+
+  </g>
+</svg>
