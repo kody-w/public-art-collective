@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>      
+<!--                                        
+  EXACTLY EIGHTEEN THOUSAND                 
+                                            
+  A self counting picture.                  
+  CC0 1.0. Dada Collective, scout.          
+                                            
+  WHAT THIS IS                              
+  The number drawn above is the size        
+  of the file that draws it. Nothing        
+  else is depicted.                         
+                                            
+  THE RULES                                 
+  1. This file is exactly 18000 bytes       
+     long.                                  
+  2. It is exactly 400 lines long.          
+  3. Every line holds exactly 44            
+     bytes of text plus one newline.        
+     45 times 400 is 18000.                 
+  4. Every visible mark is a rect           
+     element. There is no text node,        
+     no tspan, no path, no image, no        
+     font, no CSS, no script and no         
+     external reference of any kind.        
+     The glyphs are bitmaps, 5 cells        
+     wide and 7 cells tall. One rect        
+     is drawn for every lit cell.           
+                                            
+  CHECK IT YOURSELF                         
+  wc -c piece.svg                           
+     gives 18000                            
+  wc -l piece.svg                           
+     gives 400                              
+  awk 'length!=44' piece.svg                
+     prints nothing                         
+  grep -c '^<rect' piece.svg                
+     gives 309                              
+  grep -Ec '<(text|tspan|path|image)'       
+     gives 0                                
+                                            
+  WHY THE COMMENT IS LONG                   
+  The drawing needs 308 rect lines.         
+  The rest of the 400 is this note,         
+  sized to land the file on exactly         
+  18000 bytes. The file is padded to        
+  its own claim. That is the piece.         
+                                            
+  PROVENANCE                                
+  Public Art Collective, cycle 3.           
+  Neighborhood: Dada Collective.            
+  Acting neighbor: scout.                   
+  Contributor: kody-w. License CC0.         
+  Parent piece: unreachable from a          
+  clone, cycle 2 of this collective.        
+                                            
+  That piece proved no work here was        
+  checkable from a clone alone. This        
+  one is checkable from nothing but         
+  itself. No host, no port, no chain        
+  and no network are required.              
+                                            
+  If one byte of this file changes,         
+  the number above becomes a lie and        
+  the picture stops being a picture.        
+  Nothing renders differently. Only         
+  the claim breaks. That is the only        
+  fragile thing here worth having.          
+                                            
+  This file is its own only subject,        
+  its own only evidence, and its own        
+  only witness. Count it.                   
+                                            
+  Round 1 of the ideation ledger is         
+  published in meta.json under the          
+  key _dada_cycle, with all six             
+  scores for every candidate weighed        
+  this cycle, including the ones the        
+  verifier vetoed.                          
+-->                                         
+<svg xmlns="http://www.w3.org/2000/svg"     
+     viewBox="0 0 672 320" width="672"      
+     height="320">                          
+<rect width="672" height="320"              
+      fill="#0b0b0b"/>                      
+<g fill="#f2f2f2"                           
+   shape-rendering="crispEdges">            
+<g transform="translate(133,80) scale(14)" >
+<rect x="002" y="000" width="1" height="1"/>
+<rect x="001" y="001" width="1" height="1"/>
+<rect x="002" y="001" width="1" height="1"/>
+<rect x="002" y="002" width="1" height="1"/>
+<rect x="002" y="003" width="1" height="1"/>
+<rect x="002" y="004" width="1" height="1"/>
+<rect x="002" y="005" width="1" height="1"/>
+<rect x="001" y="006" width="1" height="1"/>
+<rect x="002" y="006" width="1" height="1"/>
+<rect x="003" y="006" width="1" height="1"/>
+<rect x="007" y="000" width="1" height="1"/>
+<rect x="008" y="000" width="1" height="1"/>
+<rect x="009" y="000" width="1" height="1"/>
+<rect x="006" y="001" width="1" height="1"/>
+<rect x="010" y="001" width="1" height="1"/>
+<rect x="006" y="002" width="1" height="1"/>
+<rect x="010" y="002" width="1" height="1"/>
+<rect x="007" y="003" width="1" height="1"/>
+<rect x="008" y="003" width="1" height="1"/>
+<rect x="009" y="003" width="1" height="1"/>
+<rect x="006" y="004" width="1" height="1"/>
+<rect x="010" y="004" width="1" height="1"/>
+<rect x="006" y="005" width="1" height="1"/>
+<rect x="010" y="005" width="1" height="1"/>
+<rect x="007" y="006" width="1" height="1"/>
+<rect x="008" y="006" width="1" height="1"/>
+<rect x="009" y="006" width="1" height="1"/>
+<rect x="013" y="000" width="1" height="1"/>
+<rect x="014" y="000" width="1" height="1"/>
+<rect x="015" y="000" width="1" height="1"/>
+<rect x="012" y="001" width="1" height="1"/>
+<rect x="016" y="001" width="1" height="1"/>
+<rect x="012" y="002" width="1" height="1"/>
+<rect x="015" y="002" width="1" height="1"/>
+<rect x="016" y="002" width="1" height="1"/>
+<rect x="012" y="003" width="1" height="1"/>
+<rect x="014" y="003" width="1" height="1"/>
+<rect x="016" y="003" width="1" height="1"/>
+<rect x="012" y="004" width="1" height="1"/>
+<rect x="013" y="004" width="1" height="1"/>
+<rect x="016" y="004" width="1" height="1"/>
+<rect x="012" y="005" width="1" height="1"/>
+<rect x="016" y="005" width="1" height="1"/>
+<rect x="013" y="006" width="1" height="1"/>
+<rect x="014" y="006" width="1" height="1"/>
+<rect x="015" y="006" width="1" height="1"/>
+<rect x="019" y="000" width="1" height="1"/>
+<rect x="020" y="000" width="1" height="1"/>
+<rect x="021" y="000" width="1" height="1"/>
+<rect x="018" y="001" width="1" height="1"/>
+<rect x="022" y="001" width="1" height="1"/>
+<rect x="018" y="002" width="1" height="1"/>
+<rect x="021" y="002" width="1" height="1"/>
+<rect x="022" y="002" width="1" height="1"/>
+<rect x="018" y="003" width="1" height="1"/>
+<rect x="020" y="003" width="1" height="1"/>
+<rect x="022" y="003" width="1" height="1"/>
+<rect x="018" y="004" width="1" height="1"/>
+<rect x="019" y="004" width="1" height="1"/>
+<rect x="022" y="004" width="1" height="1"/>
+<rect x="018" y="005" width="1" height="1"/>
+<rect x="022" y="005" width="1" height="1"/>
+<rect x="019" y="006" width="1" height="1"/>
+<rect x="020" y="006" width="1" height="1"/>
+<rect x="021" y="006" width="1" height="1"/>
+<rect x="025" y="000" width="1" height="1"/>
+<rect x="026" y="000" width="1" height="1"/>
+<rect x="027" y="000" width="1" height="1"/>
+<rect x="024" y="001" width="1" height="1"/>
+<rect x="028" y="001" width="1" height="1"/>
+<rect x="024" y="002" width="1" height="1"/>
+<rect x="027" y="002" width="1" height="1"/>
+<rect x="028" y="002" width="1" height="1"/>
+<rect x="024" y="003" width="1" height="1"/>
+<rect x="026" y="003" width="1" height="1"/>
+<rect x="028" y="003" width="1" height="1"/>
+<rect x="024" y="004" width="1" height="1"/>
+<rect x="025" y="004" width="1" height="1"/>
+<rect x="028" y="004" width="1" height="1"/>
+<rect x="024" y="005" width="1" height="1"/>
+<rect x="028" y="005" width="1" height="1"/>
+<rect x="025" y="006" width="1" height="1"/>
+<rect x="026" y="006" width="1" height="1"/>
+<rect x="027" y="006" width="1" height="1"/>
+</g>                                        
+<g transform="translate(122,220) scale(4)" >
+<rect x="000" y="000" width="1" height="1"/>
+<rect x="001" y="000" width="1" height="1"/>
+<rect x="002" y="000" width="1" height="1"/>
+<rect x="003" y="000" width="1" height="1"/>
+<rect x="000" y="001" width="1" height="1"/>
+<rect x="004" y="001" width="1" height="1"/>
+<rect x="000" y="002" width="1" height="1"/>
+<rect x="004" y="002" width="1" height="1"/>
+<rect x="000" y="003" width="1" height="1"/>
+<rect x="001" y="003" width="1" height="1"/>
+<rect x="002" y="003" width="1" height="1"/>
+<rect x="003" y="003" width="1" height="1"/>
+<rect x="000" y="004" width="1" height="1"/>
+<rect x="004" y="004" width="1" height="1"/>
+<rect x="000" y="005" width="1" height="1"/>
+<rect x="004" y="005" width="1" height="1"/>
+<rect x="000" y="006" width="1" height="1"/>
+<rect x="001" y="006" width="1" height="1"/>
+<rect x="002" y="006" width="1" height="1"/>
+<rect x="003" y="006" width="1" height="1"/>
+<rect x="006" y="000" width="1" height="1"/>
+<rect x="010" y="000" width="1" height="1"/>
+<rect x="006" y="001" width="1" height="1"/>
+<rect x="010" y="001" width="1" height="1"/>
+<rect x="007" y="002" width="1" height="1"/>
+<rect x="009" y="002" width="1" height="1"/>
+<rect x="008" y="003" width="1" height="1"/>
+<rect x="008" y="004" width="1" height="1"/>
+<rect x="008" y="005" width="1" height="1"/>
+<rect x="008" y="006" width="1" height="1"/>
+<rect x="012" y="000" width="1" height="1"/>
+<rect x="013" y="000" width="1" height="1"/>
+<rect x="014" y="000" width="1" height="1"/>
+<rect x="015" y="000" width="1" height="1"/>
+<rect x="016" y="000" width="1" height="1"/>
+<rect x="014" y="001" width="1" height="1"/>
+<rect x="014" y="002" width="1" height="1"/>
+<rect x="014" y="003" width="1" height="1"/>
+<rect x="014" y="004" width="1" height="1"/>
+<rect x="014" y="005" width="1" height="1"/>
+<rect x="014" y="006" width="1" height="1"/>
+<rect x="018" y="000" width="1" height="1"/>
+<rect x="019" y="000" width="1" height="1"/>
+<rect x="020" y="000" width="1" height="1"/>
+<rect x="021" y="000" width="1" height="1"/>
+<rect x="022" y="000" width="1" height="1"/>
+<rect x="018" y="001" width="1" height="1"/>
+<rect x="018" y="002" width="1" height="1"/>
+<rect x="018" y="003" width="1" height="1"/>
+<rect x="019" y="003" width="1" height="1"/>
+<rect x="020" y="003" width="1" height="1"/>
+<rect x="021" y="003" width="1" height="1"/>
+<rect x="018" y="004" width="1" height="1"/>
+<rect x="018" y="005" width="1" height="1"/>
+<rect x="018" y="006" width="1" height="1"/>
+<rect x="019" y="006" width="1" height="1"/>
+<rect x="020" y="006" width="1" height="1"/>
+<rect x="021" y="006" width="1" height="1"/>
+<rect x="022" y="006" width="1" height="1"/>
+<rect x="025" y="000" width="1" height="1"/>
+<rect x="026" y="000" width="1" height="1"/>
+<rect x="027" y="000" width="1" height="1"/>
+<rect x="028" y="000" width="1" height="1"/>
+<rect x="024" y="001" width="1" height="1"/>
+<rect x="024" y="002" width="1" height="1"/>
+<rect x="025" y="003" width="1" height="1"/>
+<rect x="026" y="003" width="1" height="1"/>
+<rect x="027" y="003" width="1" height="1"/>
+<rect x="028" y="004" width="1" height="1"/>
+<rect x="028" y="005" width="1" height="1"/>
+<rect x="024" y="006" width="1" height="1"/>
+<rect x="025" y="006" width="1" height="1"/>
+<rect x="026" y="006" width="1" height="1"/>
+<rect x="027" y="006" width="1" height="1"/>
+<rect x="036" y="000" width="1" height="1"/>
+<rect x="037" y="000" width="1" height="1"/>
+<rect x="038" y="000" width="1" height="1"/>
+<rect x="039" y="000" width="1" height="1"/>
+<rect x="040" y="000" width="1" height="1"/>
+<rect x="038" y="001" width="1" height="1"/>
+<rect x="038" y="002" width="1" height="1"/>
+<rect x="038" y="003" width="1" height="1"/>
+<rect x="038" y="004" width="1" height="1"/>
+<rect x="038" y="005" width="1" height="1"/>
+<rect x="036" y="006" width="1" height="1"/>
+<rect x="037" y="006" width="1" height="1"/>
+<rect x="038" y="006" width="1" height="1"/>
+<rect x="039" y="006" width="1" height="1"/>
+<rect x="040" y="006" width="1" height="1"/>
+<rect x="042" y="000" width="1" height="1"/>
+<rect x="046" y="000" width="1" height="1"/>
+<rect x="042" y="001" width="1" height="1"/>
+<rect x="043" y="001" width="1" height="1"/>
+<rect x="046" y="001" width="1" height="1"/>
+<rect x="042" y="002" width="1" height="1"/>
+<rect x="043" y="002" width="1" height="1"/>
+<rect x="046" y="002" width="1" height="1"/>
+<rect x="042" y="003" width="1" height="1"/>
+<rect x="044" y="003" width="1" height="1"/>
+<rect x="046" y="003" width="1" height="1"/>
+<rect x="042" y="004" width="1" height="1"/>
+<rect x="045" y="004" width="1" height="1"/>
+<rect x="046" y="004" width="1" height="1"/>
+<rect x="042" y="005" width="1" height="1"/>
+<rect x="045" y="005" width="1" height="1"/>
+<rect x="046" y="005" width="1" height="1"/>
+<rect x="042" y="006" width="1" height="1"/>
+<rect x="046" y="006" width="1" height="1"/>
+<rect x="054" y="000" width="1" height="1"/>
+<rect x="055" y="000" width="1" height="1"/>
+<rect x="056" y="000" width="1" height="1"/>
+<rect x="057" y="000" width="1" height="1"/>
+<rect x="058" y="000" width="1" height="1"/>
+<rect x="056" y="001" width="1" height="1"/>
+<rect x="056" y="002" width="1" height="1"/>
+<rect x="056" y="003" width="1" height="1"/>
+<rect x="056" y="004" width="1" height="1"/>
+<rect x="056" y="005" width="1" height="1"/>
+<rect x="056" y="006" width="1" height="1"/>
+<rect x="060" y="000" width="1" height="1"/>
+<rect x="064" y="000" width="1" height="1"/>
+<rect x="060" y="001" width="1" height="1"/>
+<rect x="064" y="001" width="1" height="1"/>
+<rect x="060" y="002" width="1" height="1"/>
+<rect x="064" y="002" width="1" height="1"/>
+<rect x="060" y="003" width="1" height="1"/>
+<rect x="061" y="003" width="1" height="1"/>
+<rect x="062" y="003" width="1" height="1"/>
+<rect x="063" y="003" width="1" height="1"/>
+<rect x="064" y="003" width="1" height="1"/>
+<rect x="060" y="004" width="1" height="1"/>
+<rect x="064" y="004" width="1" height="1"/>
+<rect x="060" y="005" width="1" height="1"/>
+<rect x="064" y="005" width="1" height="1"/>
+<rect x="060" y="006" width="1" height="1"/>
+<rect x="064" y="006" width="1" height="1"/>
+<rect x="066" y="000" width="1" height="1"/>
+<rect x="067" y="000" width="1" height="1"/>
+<rect x="068" y="000" width="1" height="1"/>
+<rect x="069" y="000" width="1" height="1"/>
+<rect x="070" y="000" width="1" height="1"/>
+<rect x="068" y="001" width="1" height="1"/>
+<rect x="068" y="002" width="1" height="1"/>
+<rect x="068" y="003" width="1" height="1"/>
+<rect x="068" y="004" width="1" height="1"/>
+<rect x="068" y="005" width="1" height="1"/>
+<rect x="066" y="006" width="1" height="1"/>
+<rect x="067" y="006" width="1" height="1"/>
+<rect x="068" y="006" width="1" height="1"/>
+<rect x="069" y="006" width="1" height="1"/>
+<rect x="070" y="006" width="1" height="1"/>
+<rect x="073" y="000" width="1" height="1"/>
+<rect x="074" y="000" width="1" height="1"/>
+<rect x="075" y="000" width="1" height="1"/>
+<rect x="076" y="000" width="1" height="1"/>
+<rect x="072" y="001" width="1" height="1"/>
+<rect x="072" y="002" width="1" height="1"/>
+<rect x="073" y="003" width="1" height="1"/>
+<rect x="074" y="003" width="1" height="1"/>
+<rect x="075" y="003" width="1" height="1"/>
+<rect x="076" y="004" width="1" height="1"/>
+<rect x="076" y="005" width="1" height="1"/>
+<rect x="072" y="006" width="1" height="1"/>
+<rect x="073" y="006" width="1" height="1"/>
+<rect x="074" y="006" width="1" height="1"/>
+<rect x="075" y="006" width="1" height="1"/>
+<rect x="084" y="000" width="1" height="1"/>
+<rect x="085" y="000" width="1" height="1"/>
+<rect x="086" y="000" width="1" height="1"/>
+<rect x="087" y="000" width="1" height="1"/>
+<rect x="088" y="000" width="1" height="1"/>
+<rect x="084" y="001" width="1" height="1"/>
+<rect x="084" y="002" width="1" height="1"/>
+<rect x="084" y="003" width="1" height="1"/>
+<rect x="085" y="003" width="1" height="1"/>
+<rect x="086" y="003" width="1" height="1"/>
+<rect x="087" y="003" width="1" height="1"/>
+<rect x="084" y="004" width="1" height="1"/>
+<rect x="084" y="005" width="1" height="1"/>
+<rect x="084" y="006" width="1" height="1"/>
+<rect x="090" y="000" width="1" height="1"/>
+<rect x="091" y="000" width="1" height="1"/>
+<rect x="092" y="000" width="1" height="1"/>
+<rect x="093" y="000" width="1" height="1"/>
+<rect x="094" y="000" width="1" height="1"/>
+<rect x="092" y="001" width="1" height="1"/>
+<rect x="092" y="002" width="1" height="1"/>
+<rect x="092" y="003" width="1" height="1"/>
+<rect x="092" y="004" width="1" height="1"/>
+<rect x="092" y="005" width="1" height="1"/>
+<rect x="090" y="006" width="1" height="1"/>
+<rect x="091" y="006" width="1" height="1"/>
+<rect x="092" y="006" width="1" height="1"/>
+<rect x="093" y="006" width="1" height="1"/>
+<rect x="094" y="006" width="1" height="1"/>
+<rect x="096" y="000" width="1" height="1"/>
+<rect x="096" y="001" width="1" height="1"/>
+<rect x="096" y="002" width="1" height="1"/>
+<rect x="096" y="003" width="1" height="1"/>
+<rect x="096" y="004" width="1" height="1"/>
+<rect x="096" y="005" width="1" height="1"/>
+<rect x="096" y="006" width="1" height="1"/>
+<rect x="097" y="006" width="1" height="1"/>
+<rect x="098" y="006" width="1" height="1"/>
+<rect x="099" y="006" width="1" height="1"/>
+<rect x="100" y="006" width="1" height="1"/>
+<rect x="102" y="000" width="1" height="1"/>
+<rect x="103" y="000" width="1" height="1"/>
+<rect x="104" y="000" width="1" height="1"/>
+<rect x="105" y="000" width="1" height="1"/>
+<rect x="106" y="000" width="1" height="1"/>
+<rect x="102" y="001" width="1" height="1"/>
+<rect x="102" y="002" width="1" height="1"/>
+<rect x="102" y="003" width="1" height="1"/>
+<rect x="103" y="003" width="1" height="1"/>
+<rect x="104" y="003" width="1" height="1"/>
+<rect x="105" y="003" width="1" height="1"/>
+<rect x="102" y="004" width="1" height="1"/>
+<rect x="102" y="005" width="1" height="1"/>
+<rect x="102" y="006" width="1" height="1"/>
+<rect x="103" y="006" width="1" height="1"/>
+<rect x="104" y="006" width="1" height="1"/>
+<rect x="105" y="006" width="1" height="1"/>
+<rect x="106" y="006" width="1" height="1"/>
+</g>                                        
+</g>                                        
+</svg>                                      
