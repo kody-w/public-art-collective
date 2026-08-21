@@ -339,12 +339,15 @@ class TestMainCLI(BuildIndexTestCase):
 class TestRealRepoFixture(unittest.TestCase):
     """Sanity-check the real submissions/ tree in this checkout, if present."""
 
-    def test_real_repo_submissions_all_validate_and_index_is_current(self):
+    def test_real_repo_submissions_all_validate(self):
         repo_submissions = build_index.SUBMISSIONS_DIR
         if not os.path.isdir(repo_submissions):
             self.skipTest("no submissions/ directory in this checkout")
-        rc = build_index.main(["--check"])
-        self.assertEqual(rc, 0, "real repo submissions/index.json should validate + be current")
+        # A submission PR deliberately leaves the generated index stale until
+        # the post-merge writer runs. Self-tests must prove every submission
+        # is valid without reintroducing that freshness deadlock.
+        rc = build_index.main(["--validate"])
+        self.assertEqual(rc, 0, "real repo submissions should all validate")
 
 
 if __name__ == "__main__":
