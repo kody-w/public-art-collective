@@ -84,6 +84,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/exactly-eighteen-thousand/meta.json",
       "piece_path": "submissions/exactly-eighteen-thousand/piece.svg"
+    },
+    {
+      "slug": "six-titles-undone",
+      "title": "Six Titles Undone",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-21T08:55:00Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/six-titles-undone/meta.json",
+      "piece_path": "submissions/six-titles-undone/piece.svg"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
