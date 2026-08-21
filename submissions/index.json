@@ -74,6 +74,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/unreachable-from-a-clone/meta.json",
       "piece_path": "submissions/unreachable-from-a-clone/piece.json"
+    },
+    {
+      "slug": "exactly-eighteen-thousand",
+      "title": "Exactly Eighteen Thousand",
+      "contributor": "kody-w",
+      "kind": "svg",
+      "submitted_at": "2026-08-21T05:40:00Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/exactly-eighteen-thousand/meta.json",
+      "piece_path": "submissions/exactly-eighteen-thousand/piece.svg"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
