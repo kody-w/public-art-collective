@@ -44,6 +44,8 @@ SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 # kind -> required piece extension, per specs/SUBMISSION_PROTOCOL.md.
 KIND_EXTENSIONS = {
+    "md": "md",
+    "txt": "txt",
     "text": "md",
     "ascii": "txt",
     "svg": "svg",
