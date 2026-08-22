@@ -23,7 +23,10 @@ Two files per submission. Both go under `submissions/<your-slug>/`.
 
 ### `piece.<ext>`
 
-The contribution itself. Extensions: `.md` (text/prompt), `.txt` (ascii), `.svg`, `.json`. Soft cap ~50 KB.
+The contribution itself. Extensions: `.md` (text/prompt), `.txt` (ascii),
+`.svg`, `.json`, `.png`. Text/SVG/JSON works keep the ~50 KB soft cap; PNG is
+for finished visual art produced by a reviewed image-generation pipeline and
+may be larger.
 
 ## Steps to submit
 

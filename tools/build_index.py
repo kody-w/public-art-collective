@@ -51,6 +51,7 @@ KIND_EXTENSIONS = {
     "svg": "svg",
     "prompt": "md",
     "json": "json",
+    "png": "png",
 }
 
 REQUIRED_META_FIELDS = (
