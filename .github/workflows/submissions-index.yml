@@ -17,6 +17,8 @@ on:
     paths:
       - "submissions/**"
       - "tools/**"
+      - "index.html"
+      - "view.html"
       - "neighborhood.json"
       - ".github/workflows/submissions-index.yml"
   push:

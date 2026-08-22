@@ -50,6 +50,8 @@
     }
     .cta.secondary { background: transparent; color: var(--accent); border: 1px solid var(--card-border); }
     .submissions-empty { padding: 24px; text-align: center; color: var(--muted); border: 1px dashed var(--card-border); border-radius: 12px; }
+    .art-link { color: var(--fg); text-decoration: none; }
+    .art-link:hover { color: var(--accent); text-decoration: underline; }
     footer { margin-top: 48px; font-size: 12px; color: var(--muted); }
   </style>
 </head>
@@ -114,7 +116,7 @@
           const title = encodeURIComponent("Request access — " + (n.display_name || n.name));
           const body = encodeURIComponent("GitHub login: \nWhat I'd contribute: \nMy operator (rappid or seed url): \n");
           document.getElementById("cta-join").href = repo + "/issues/new?title=" + title + "&body=" + body + "&labels=join-request";
-          document.getElementById("cta-submissions").href = repo + "/tree/main/submissions";
+          document.getElementById("cta-submissions").href = "./view.html";
         }
       } catch (e) { /* offline / not pushed yet */ }
 
@@ -132,8 +134,10 @@
           return;
         }
         target.classList.remove("submissions-empty");
+        const esc = value => String(value || "").replace(/[&<>"']/g, c =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
         target.innerHTML = idx.submissions.slice(0, 12).map(s =>
-          `<div style="padding:10px 0;border-bottom:1px solid var(--card-border);"><strong>${s.title || s.slug}</strong> by @${s.contributor || '?'} <span class="muted">— ${s.merged_at || ''}</span></div>`
+          `<div style="padding:10px 0;border-bottom:1px solid var(--card-border);"><a class="art-link" href="./view.html#/${encodeURIComponent(s.slug)}"><strong>${esc(s.title || s.slug)}</strong></a> by @${esc(s.contributor || '?')} <span class="muted">— ${esc(s.kind || '')}</span></div>`
         ).join("");
       } catch (e) {
         const target = document.getElementById("submissions");

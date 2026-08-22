@@ -139,6 +139,8 @@ class TestDiscoverAndValidate(BuildIndexTestCase):
 
 class TestBuildEntries(BuildIndexTestCase):
     def test_all_kind_extensions_supported(self):
+        write_submission(self.submissions_dir, "a-md", meta_overrides={"kind": "md"}, piece_ext="md")
+        write_submission(self.submissions_dir, "a-txt", meta_overrides={"kind": "txt"}, piece_ext="txt")
         write_submission(self.submissions_dir, "a-text", meta_overrides={"kind": "text"}, piece_ext="md")
         write_submission(self.submissions_dir, "a-ascii", meta_overrides={"kind": "ascii"}, piece_ext="txt")
         write_submission(self.submissions_dir, "a-svg", meta_overrides={"kind": "svg"}, piece_ext="svg")
@@ -146,7 +148,7 @@ class TestBuildEntries(BuildIndexTestCase):
         write_submission(self.submissions_dir, "a-json", meta_overrides={"kind": "json"}, piece_ext="json",
                           piece_content="{}")
         entries = build_index.build_entries(self.submissions_dir, "CC0-1.0")
-        self.assertEqual(len(entries), 5)
+        self.assertEqual(len(entries), 7)
 
     def test_deterministic_order_by_submitted_at_then_slug(self):
         write_submission(self.submissions_dir, "zzz-later", meta_overrides={"submitted_at": "2026-02-01T00:00:00Z"})

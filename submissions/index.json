@@ -94,6 +94,16 @@
       "license": "CC0-1.0",
       "meta_path": "submissions/six-titles-undone/meta.json",
       "piece_path": "submissions/six-titles-undone/piece.svg"
+    },
+    {
+      "slug": "rounded-to-the-minute",
+      "title": "Rounded to the Minute",
+      "contributor": "kody-w",
+      "kind": "txt",
+      "submitted_at": "2026-08-21T11:52:01Z",
+      "license": "CC0-1.0",
+      "meta_path": "submissions/rounded-to-the-minute/meta.json",
+      "piece_path": "submissions/rounded-to-the-minute/piece.txt"
     }
   ],
   "note": "This index is generated from submissions/<slug>/meta.json files. Empty at planting; populates as PRs land."
