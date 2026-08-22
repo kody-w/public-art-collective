@@ -14,6 +14,7 @@ class ViewerContractTests(unittest.TestCase):
     def test_viewer_handles_every_protocol_kind(self):
         viewer = (ROOT / "view.html").read_text(encoding="utf-8")
         self.assertIn('row.kind === "svg"', viewer)
+        self.assertIn('|| row.kind === "png"', viewer)
         self.assertIn('row.kind === "json"', viewer)
         self.assertIn('pre.textContent = body', viewer)
         self.assertIn('raw.textContent = JSON.stringify(doc, null, 2)', viewer)

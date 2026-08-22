@@ -147,8 +147,10 @@ class TestBuildEntries(BuildIndexTestCase):
         write_submission(self.submissions_dir, "a-prompt", meta_overrides={"kind": "prompt"}, piece_ext="md")
         write_submission(self.submissions_dir, "a-json", meta_overrides={"kind": "json"}, piece_ext="json",
                           piece_content="{}")
+        write_submission(self.submissions_dir, "a-png", meta_overrides={"kind": "png"}, piece_ext="png",
+                          piece_content="png fixture")
         entries = build_index.build_entries(self.submissions_dir, "CC0-1.0")
-        self.assertEqual(len(entries), 7)
+        self.assertEqual(len(entries), 8)
 
     def test_deterministic_order_by_submitted_at_then_slug(self):
         write_submission(self.submissions_dir, "zzz-later", meta_overrides={"submitted_at": "2026-02-01T00:00:00Z"})

@@ -145,7 +145,7 @@
       navLink($("next"), submissions[index + 1]);
       document.title = `${row.title || row.slug} - Public Art Collective`;
 
-      if (row.kind === "svg") {
+      if (row.kind === "svg" || row.kind === "png") {
         const image = document.createElement("img");
         image.src = pathURL(row.piece_path);
         image.alt = row.title || row.slug;
