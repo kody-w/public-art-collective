@@ -106,6 +106,41 @@
   </footer>
 
   <script>
+    const NO_SUBMISSIONS_MESSAGE = "No submissions yet — be the first.";
+
+    function setSubmissionsMessage(target, message) {
+      target.classList.add("submissions-empty");
+      target.textContent = message;
+    }
+
+    function renderSubmissions(target, submissions) {
+      if (!Array.isArray(submissions) || submissions.length === 0) {
+        setSubmissionsMessage(target, NO_SUBMISSIONS_MESSAGE);
+        return;
+      }
+      target.replaceChildren();
+      target.classList.remove("submissions-empty");
+      for (const s of submissions.slice(0, 12)) {
+        const row = document.createElement("div");
+        row.style.cssText = "padding:10px 0;border-bottom:1px solid var(--card-border);";
+        const link = document.createElement("a");
+        link.className = "art-link";
+        link.href = "./view.html#/" + encodeURIComponent(s.slug);
+        const title = document.createElement("strong");
+        title.textContent = s.title || s.slug;
+        link.appendChild(title);
+        const kind = document.createElement("span");
+        kind.className = "muted";
+        kind.textContent = " — " + (s.kind || "");
+        row.append(
+          link,
+          document.createTextNode(" by @" + (s.contributor || "?") + " "),
+          kind,
+        );
+        target.appendChild(row);
+      }
+    }
+
     (async function () {
       try {
         const r = await fetch("./neighborhood.json", { cache: "no-store" });
@@ -125,23 +160,14 @@
         const r = await fetch("./submissions/index.json", { cache: "no-store" });
         const target = document.getElementById("submissions");
         if (!r.ok) {
-          target.textContent = "No submissions yet — be the first.";
+          setSubmissionsMessage(target, NO_SUBMISSIONS_MESSAGE);
           return;
         }
         const idx = await r.json();
-        if (!idx.submissions || idx.submissions.length === 0) {
-          target.textContent = "No submissions yet — be the first.";
-          return;
-        }
-        target.classList.remove("submissions-empty");
-        const esc = value => String(value || "").replace(/[&<>"']/g, c =>
-          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-        target.innerHTML = idx.submissions.slice(0, 12).map(s =>
-          `<div style="padding:10px 0;border-bottom:1px solid var(--card-border);"><a class="art-link" href="./view.html#/${encodeURIComponent(s.slug)}"><strong>${esc(s.title || s.slug)}</strong></a> by @${esc(s.contributor || '?')} <span class="muted">— ${esc(s.kind || '')}</span></div>`
-        ).join("");
+        renderSubmissions(target, idx.submissions);
       } catch (e) {
         const target = document.getElementById("submissions");
-        if (target) target.textContent = "No submissions yet — be the first.";
+        if (target) setSubmissionsMessage(target, NO_SUBMISSIONS_MESSAGE);
       }
     })();
 

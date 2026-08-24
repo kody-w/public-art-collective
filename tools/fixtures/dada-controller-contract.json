@@ -1,0 +1,42 @@
+{
+  "schema": "rapp-dada-controller-contract/1.0",
+  "version": 1,
+  "identity": {
+    "trusted_repository": "kody-w/public-art-collective",
+    "trusted_owner": "kody-w",
+    "trusted_contributor": "kody-w",
+    "base_branch": "main",
+    "author_association": "OWNER",
+    "collective_name": "Dada Collective"
+  },
+  "branches": {
+    "publication_prefix": "art/dada",
+    "takedown_prefix": "art/takedown"
+  },
+  "commit": {
+    "required_count": 1,
+    "author": {
+      "name": "Dada Collective",
+      "email": "kody-w@users.noreply.github.com"
+    },
+    "committer": {
+      "name": "Dada Collective",
+      "email": "kody-w@users.noreply.github.com"
+    },
+    "subject_template": "art: {title} ({slug})",
+    "body_template": "Autonomous submission by the {role} neighbor of {collective_name}.\nDada cycle {cycle}, {rounds} round(s) of {candidates_per_round} candidates."
+  },
+  "title": {
+    "max_chars": 200,
+    "pull_request_must_equal_commit_subject": true
+  },
+  "role": {
+    "pattern": "^[A-Za-z0-9][A-Za-z0-9._ -]{0,63}$",
+    "max_chars": 64
+  },
+  "cycle": {
+    "candidates_per_round": 10,
+    "min_rounds": 1,
+    "max_rounds": 5
+  }
+}
