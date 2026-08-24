@@ -49,16 +49,94 @@ canonical neighborhood identity, but a malformed, unreadable, or
 identity-drifted existing `submissions/index.json` fails closed instead of
 being overwritten.
 
+### Protected index transaction
+
+`main` is expected to have a GitHub ruleset that requires the status check
+context **Verify controller provenance** from the GitHub Actions integration
+(app id `15368`). Configure this as a required status check, not as a required
+workflow or a bypass: require the branch to be up to date with the latest
+`main` tip (strict mode), configure no bypass actors, and block force pushes
+and every other non-fast-forward update. Because the checked generated-index
+transaction updates `main` directly with a normal fast-forward, the ruleset
+**MUST NOT add a require-PR rule**. Requiring every update to arrive through a
+PR would reject the intended checked index commit; omitting that rule is not a
+bypass actor or a non-fast-forward exception.
+
+GitHub enforces only that bare context plus integration id; it does not bind
+the accepted check to a workflow file, workflow name, or job identity. This
+repository has two intended trusted producers:
+
+- For PR heads, `.github/workflows/reviewed-png-attestation.yml` produces it
+  from `pull_request_target`, using only validator code from protected
+  `main`.
+- For deterministic index-only bot commits,
+  `.github/workflows/submissions-index.yml` produces it only after the trusted
+  post-merge job has run all self-tests, validated every submission, completed
+  `build_index.py --write` followed by `--check`, and proven the commit changes
+  exactly the regular mode-`100644` `submissions/index.json` blob with the
+  fetched `main` tip as its sole parent.
+
+Because workflow identity is not enforced by the ruleset, repository
+**Settings > Actions > General > Workflow permissions** must keep the default
+`GITHUB_TOKEN` read-only. Only the SHA-pinned `regenerate-index` writer job in
+`.github/workflows/submissions-index.yml` gets `checks: write`; any new or
+changed workflow requesting `checks: write` is security-sensitive and must be
+treated as able to forge this context. A workflow that introduces another job
+with the same required context is likewise security-sensitive. This
+permission governance is enforced for proposed changes by the existing
+`pull_request_target` provenance gate, not by candidate-controlled tests. That
+gate proves only the permission/context topology and pinned checkout surfaces
+it scans; it does not attest the privileged writer job's step bodies or shell
+logic, so edits there remain security-sensitive human-review territory.
+
+Before returning success for any PR, including a non-PNG PR, the verifier from
+protected `main` scans the candidate `.github/workflows/*.yml` and `*.yaml`
+files as bounded, no-follow data. It requires both protected workflow files,
+allows semantic `checks: write` only in `submissions-index.yml` job
+`regenerate-index`, reserves the exact job display name **Verify controller
+provenance** for `reviewed-png-attestation.yml` job
+`verify-controller-provenance`, and verifies the required checkout-action
+pins. It does not bind the privileged writer job's step bodies. It rejects
+invalid encodings, tabs, YAML anchors/aliases, ambiguous
+permission forms, unsafe file types, and bounded file/count overflows without
+loading YAML or executing candidate content. The local PR-head tests are
+defense in depth, not an enforcement boundary: a PR can edit those tests, but
+it cannot edit the trusted target verifier examining the same candidate bytes.
+
+The index writer first pushes each candidate commit to a unique
+`bot/regenerate-index-<run-id>-<workflow-attempt>-<transaction-attempt>`
+branch. Using only its job-scoped `GITHUB_TOKEN` with `checks: write`, it then
+creates a completed-success **Verify controller provenance** Check Run for
+that exact SHA and reads it back, requiring the exact name, SHA, conclusion,
+external transaction id, and GitHub Actions app slug/id. Only then does it
+re-fetch `main` and attempt a normal fast-forward push. A race discards that
+temporary ref and rebuilds a fresh commit with a fresh Check Run; a check is
+never reused for a rebased or otherwise changed SHA.
+
+If a checked push is rejected while `main` has not raced, the writer retries
+that exact checked SHA with the same single Check Run for four total push
+attempts, using bounded linear waits of 3, 6, and 9 seconds. It never creates a
+replacement check for a no-race rejection. A fourth rejection fails with a
+ruleset/context diagnostic. If all bounded transactions lose genuine races,
+the writer cleans its temporary branches and fails visibly; it never opens a
+fallback PR because that checked commit is structurally behind `main`. The
+newer `main` push queues a fresh writer run. EXIT, INT, and TERM traps attempt
+warning-only cleanup after every temp-ref push while preserving the primary
+exit or signal status, and cleanup failure never masks that result. No PAT,
+repository secret, admin permission, ruleset bypass, or fallback PR is part
+of this design.
+
 These local commands prove structure and byte binding, not who issued a
-receipt. Reviewed PNG PRs also require the
-**Reviewed PNG provenance / Verify controller provenance** status. Its
+receipt. Reviewed PNG PRs also require the bare
+**Verify controller provenance** status-check context. Its
 `pull_request_target` workflow executes the validator from the current
-protected `main` tip and treats the sparse PR checkout only as data; the PR
-base SHA remains ancestry evidence, not a checkout target. Using the read-only
-GitHub token, it re-reads the current PR and bounded changed-file pages first,
-rejects stale event/API/base-checkout evidence, and fetches commit evidence
-only when a reviewed PNG is affected. Controller publication requires the
-pinned owner repo/account, an `art/dada/<slug>-<8 hex>` branch, one exact
+protected `main` tip and treats the sparse `submissions/` plus
+`.github/workflows/` PR checkout only as data; the PR base SHA remains
+ancestry evidence, not a checkout target. Using the read-only GitHub token, it
+re-reads the current PR and bounded changed-file pages first, rejects stale
+event/API/base-checkout evidence, and fetches commit evidence only when a
+reviewed PNG is affected. Controller publication requires the pinned owner
+repo/account, an `art/dada/<slug>-<8 hex>` branch, one exact
 controller-identity commit based on the current base SHA, and exactly the two
 added submission blobs reported by GitHub. Fork, direct-upload, extra-file,
 changed-blob, and forged-receipt PNG PRs fail. No candidate code runs and no
@@ -96,12 +174,15 @@ and match both removed Git blob hashes. Partial removals, updates, migrations,
 renames, copies, additions, mixed or unrelated changes, forks, and stale
 evidence fail closed.
 
-Repository rules must mark that named status check as required for `main` and
-require branches to be up to date; workflow files cannot configure branch
-protection themselves. GitHub event/API identity proves that the pinned
-account and repository supplied the exact commit, but an unsigned local commit
-cannot cryptographically prove which process controlled that account. The
-gate accepts GitHub's explicit `unsigned` state, accepts valid GitHub signature
+Repository rules must mark that exact status check and integration as required
+for `main` in strict latest-main mode, without a bypass, and must reject
+non-fast-forward updates, but must not require a PR for the direct checked
+index fast-forward; workflow files cannot configure those repository rules
+themselves. The ruleset proves the context and integration id, not workflow
+identity. Separately, GitHub event/API identity proves that the pinned account
+and repository supplied the exact commit, but an unsigned local commit cannot
+cryptographically prove which process controlled that account. The gate
+accepts GitHub's explicit `unsigned` state, accepts valid GitHub signature
 verification, and rejects failed or indeterminate signatures. A stronger
 producer attestation would require the Dada controller itself to sign or issue
 a GitHub OIDC artifact attestation for the PNG digest.

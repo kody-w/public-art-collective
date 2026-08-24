@@ -101,14 +101,15 @@ The receipt is byte-bound evidence, but it is not a signature: anyone able to
 edit `meta.json` can copy its shape. Therefore local
 `tools/build_index.py --validate` deliberately remains structural validation,
 while PNG publication additionally depends on the required
-**Reviewed PNG provenance / Verify controller provenance** PR check.
+bare **Verify controller provenance** status-check context.
 
 That check runs from
 `.github/workflows/reviewed-png-attestation.yml` on
 `pull_request_target`, so GitHub loads the workflow from the protected base
 branch. It checks out the current protected `main` tip as `trusted`, checks
-out only `submissions/` from the head as untrusted data, and executes only
-`trusted/tools/verify_png_attestation.py`. The PR base SHA is still used
+out only `submissions/` and `.github/workflows/` from the head as untrusted
+data, and executes only `trusted/tools/verify_png_attestation.py`, which
+imports the trusted `tools/build_index.py`. The PR base SHA is still used
 later as ancestry evidence, but never as the trusted checkout target. The
 token has read-only `contents`/`pull-requests` permissions and is never made
 available to candidate code. It deliberately has no path filter: the required
@@ -119,6 +120,29 @@ ordinary submissions workflow. The gate obtains the current PR and
 changed-file records before classifying the change. It never fetches a commit
 list for an unrelated non-PNG PR, and rejects a PR reporting more than
 GitHub's documented 3,000-file files-API ceiling before attempting pagination.
+
+Before any PR can receive success, the protected verifier also applies the
+candidate-workflow policy using a deterministic stdlib-only scanner. Candidate
+workflow files are bounded by count, per-file bytes, and total bytes; opened
+without following links; decoded as strict UTF-8; and never loaded or
+executed as YAML or code. Both required workflow paths must remain regular
+files. Only `.github/workflows/submissions-index.yml` job `regenerate-index`
+may request semantic `checks: write`; only
+`.github/workflows/reviewed-png-attestation.yml` job
+`verify-controller-provenance` may declare the exact display name **Verify
+controller provenance**; and required `actions/checkout` uses stay pinned. The
+scanner proves that permission/context topology and those checkout pins, but
+it does not bind the privileged writer job's step bodies or shell logic; edits
+there remain security-sensitive human-review territory.
+Tabs, anchors, aliases, inline/ambiguous permission forms, dynamic job names,
+invalid encodings, nested directories, symlinks, special files, and over-limit
+inputs fail closed with policy-specific errors.
+
+That `pull_request_target` scan is the enforceable guard because both its
+workflow and verifier come from protected `main`. The local PR-head tests are
+defense in depth, not an enforcement boundary; candidate changes can alter
+those tests, so their success is never treated as authoritative workflow
+policy evidence.
 
 `tools/fixtures/dada-controller-contract.json` is the machine-readable
 cross-repository contract shared with RAPP Sentinel. It pins the schema and
@@ -180,15 +204,73 @@ removals, additions, modifications, updates, migrations, renames, copies,
 forks, ordinary branches, multiple slugs, and mixed or unrelated files fail
 closed. No candidate code is executed, and no admin bypass is required.
 
-The status must be required by the repository rules for `main`, with the
-branch required to be up to date; those settings are GitHub-hosted and cannot
-be committed here. GitHub can attest the authenticated account/repository and
-report commit signature status, but an unsigned commit does not
-cryptographically identify the local process that used the account. The gate
-accepts only GitHub `verified: true` or the explicit `unsigned` state.
-Cryptographic controller-process provenance would require a future
-producer-side signature or GitHub OIDC artifact attestation bound to
-`image_sha256`.
+The status must be configured in the repository ruleset for `main` as the
+required status check **Verify controller provenance** from GitHub Actions app
+id `15368`. It is a required status check, not a required-workflow rule and
+not a bypass. The ruleset has no bypass actors, requires the latest `main` tip
+(strict up-to-date mode), and blocks force pushes and all other
+non-fast-forward updates. Those settings are GitHub-hosted and cannot be
+committed here. The checked generated-index transaction is a direct,
+normal fast-forward update, so the ruleset **MUST NOT add a require-PR rule**;
+such a rule would reject that intended transaction and is not needed to
+preserve the no-bypass/no-force-push guarantees. The ruleset enforces the
+context plus integration id, not workflow identity. Separately, GitHub can
+attest the authenticated account/repository and report commit signature
+status, but an unsigned commit does not cryptographically identify the local
+process that used the account. The gate accepts only GitHub `verified: true`
+or the explicit `unsigned` state. Cryptographic controller-process provenance
+would require a future producer-side signature or GitHub OIDC artifact
+attestation bound to `image_sha256`.
+
+### Protected generated-index updates
+
+The bare **Verify controller provenance** context has two intended trusted
+producers. Normal PRs receive it from the base-controlled
+`pull_request_target` workflow described above. Deterministic index-only bot
+commits receive the same context from the trusted post-merge `Submissions
+index` workflow. GitHub does not distinguish those workflow identities when
+enforcing the context and integration id.
+
+The repository's default `GITHUB_TOKEN` workflow permissions must therefore
+remain read-only. Only the SHA-pinned `regenerate-index` writer job in
+`.github/workflows/submissions-index.yml` gets job-scoped `checks: write`.
+Any new or changed workflow requesting `checks: write`, or introducing another
+job with this required context, is security-sensitive because it could satisfy
+the same ruleset input. The protected target scanner described above enforces
+this candidate policy on every PR, but only for the permission/context
+topology and pinned checkout surface it scans; the privileged writer job's
+step bodies still require security-sensitive human review. PR-head source
+tests only repeat the policy as defense in depth.
+
+For each index transaction, that workflow:
+
+1. fetches the current `origin/main` tip and creates a unique temporary branch
+   from that exact commit;
+2. runs all repository self-tests, validates every submission, runs
+   `tools/build_index.py --write`, then proves determinism with `--check`;
+3. proves the only changed path is `submissions/index.json`, that it is a
+   non-symlink regular Git blob with mode `100644`, and that the resulting
+   commit's sole parent is the fetched `main` tip;
+4. pushes the commit to its unique temporary branch before creating a
+   completed-success Check Run with the job-scoped `GITHUB_TOKEN`;
+5. reads the Check Run back and requires the exact context, head SHA,
+   successful conclusion, transaction id, and GitHub Actions app slug/id
+   before attempting a normal fast-forward update of `main`.
+
+If `main` races, the workflow deletes that temporary branch and starts from
+the new tip, producing a new commit and Check Run rather than carrying proof
+across a rebase. If a checked push is rejected without a race, the workflow
+uses the same SHA and same single Check Run for four total push attempts, with
+bounded linear waits of 3, 6, and 9 seconds. It never recreates the check to
+work around a no-race rejection; the fourth rejection fails with a
+ruleset/context diagnostic. If every bounded transaction loses a genuine
+race, it attempts cleanup of every temporary branch and fails nonzero. It does
+not open a structurally behind fallback PR; the newer `main` push queues a
+fresh writer run. EXIT, INT, and TERM traps attempt best-effort cleanup after
+a temp push while preserving the original exit or signal status; cleanup
+failure warns without masking that result. Candidate-branch code is never
+executed to create a Check Run, and the design uses no PAT, repository secret,
+admin permission, ruleset bypass, or fallback PR.
 
 ## Steps to submit
 

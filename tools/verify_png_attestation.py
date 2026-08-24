@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Verify protected reviewed-PNG publication and takedown PRs.
+"""Verify candidate workflow policy and protected reviewed-PNG PRs.
 
 This script is intended to run from the protected base branch under
 pull_request_target. It treats the PR checkout as data only, validates that
-tree with the protected base branch tip's build_index module, and then binds a
-reviewed PNG addition to the pinned Dada controller identity or an exact
-reviewed PNG removal to the pinned repository owner.
+tree with trusted code, enforces bounded workflow permissions/context policy
+for every PR, and then binds a reviewed PNG addition to the pinned Dada
+controller identity or an exact reviewed PNG removal to the pinned repository
+owner.
 
 The GitHub event and API evidence are injectable JSON files so the complete
 gate can be tested offline:
@@ -82,9 +83,31 @@ MAX_CHANGED_FILES = 3000
 MAX_PROTECTED_COMMITS = 1
 TAKEDOWN_RESULT_PREFIX = "takedown:"
 
+CANDIDATE_WORKFLOW_DIRECTORY = ".github/workflows"
+REQUIRED_CANDIDATE_WORKFLOWS = frozenset({
+    ".github/workflows/reviewed-png-attestation.yml",
+    ".github/workflows/submissions-index.yml",
+})
+PRIVILEGED_WORKFLOW_PATH = ".github/workflows/submissions-index.yml"
+PRIVILEGED_JOB_ID = "regenerate-index"
+PROVENANCE_WORKFLOW_PATH = (
+    ".github/workflows/reviewed-png-attestation.yml"
+)
+PROVENANCE_JOB_ID = "verify-controller-provenance"
+PROVENANCE_JOB_NAME = "Verify controller provenance"
+PINNED_CHECKOUT_ACTION_SHA = "11bd71901bbe5b1630ceea73d27597364c9af683"
+MAX_CANDIDATE_WORKFLOW_FILES = 64
+MAX_CANDIDATE_WORKFLOW_FILE_BYTES = 256 * 1024
+MAX_CANDIDATE_WORKFLOW_TOTAL_BYTES = 1024 * 1024
+WORKFLOW_JOB_ID_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
+WORKFLOW_BLOCK_SCALAR_RE = re.compile(r"^[|>][+-]?$")
+WORKFLOW_ANCHOR_OR_ALIAS_RE = re.compile(
+    r"(^|[\s:,{\[])[&*][^\s,\]}#]+"
+)
+
 
 class AttestationError(Exception):
-    """Raised when a reviewed PNG lacks trusted PR provenance."""
+    """Raised when a protected PR attestation invariant fails."""
 
 
 def _reject_duplicate_keys(pairs):
@@ -656,6 +679,754 @@ def _require_real_root(root, label):
     return root
 
 
+def _workflow_policy_error(message):
+    raise AttestationError(f"candidate workflow policy: {message}")
+
+
+def _workflow_entry_kind(mode):
+    if stat.S_ISREG(mode):
+        return "regular file"
+    if stat.S_ISDIR(mode):
+        return "directory"
+    if stat.S_ISLNK(mode):
+        return "symlink"
+    return "special file"
+
+
+def _candidate_workflow_payloads(candidate_root):
+    github_dir = os.path.join(candidate_root, ".github")
+    workflow_dir = os.path.join(
+        candidate_root,
+        *CANDIDATE_WORKFLOW_DIRECTORY.split("/"),
+    )
+    for path, label in (
+        (github_dir, "candidate '.github' path"),
+        (workflow_dir, "candidate workflow directory"),
+    ):
+        try:
+            mode = os.lstat(path).st_mode
+        except FileNotFoundError:
+            _workflow_policy_error(f"{label} is missing")
+        except OSError as exc:
+            _workflow_policy_error(f"cannot inspect {label} ({exc})")
+        if not stat.S_ISDIR(mode):
+            _workflow_policy_error(
+                f"{label} must be a real directory, not "
+                f"{_workflow_entry_kind(mode)}"
+            )
+
+    try:
+        with os.scandir(workflow_dir) as scanned:
+            entries = []
+            for entry in scanned:
+                entries.append(entry)
+                if len(entries) > MAX_CANDIDATE_WORKFLOW_FILES:
+                    _workflow_policy_error(
+                        f"'{CANDIDATE_WORKFLOW_DIRECTORY}' contains more "
+                        f"than {MAX_CANDIDATE_WORKFLOW_FILES} entries; at "
+                        "most that many workflow files are allowed"
+                    )
+            entries.sort(key=lambda entry: entry.name)
+    except OSError as exc:
+        _workflow_policy_error(
+            f"cannot scan '{CANDIDATE_WORKFLOW_DIRECTORY}' ({exc})"
+        )
+
+    payloads = {}
+    total_bytes = 0
+    for entry in entries:
+        try:
+            entry.name.encode("utf-8")
+        except UnicodeEncodeError:
+            _workflow_policy_error(
+                "workflow filenames must be valid UTF-8"
+            )
+        relative = f"{CANDIDATE_WORKFLOW_DIRECTORY}/{entry.name}"
+        try:
+            _safe_repo_path(relative, f"candidate workflow path {relative!r}")
+        except AttestationError as exc:
+            _workflow_policy_error(
+                f"unsafe workflow path {relative!r} ({exc})"
+            )
+        try:
+            mode = entry.stat(follow_symlinks=False).st_mode
+        except OSError as exc:
+            _workflow_policy_error(
+                f"cannot inspect workflow entry '{relative}' ({exc})"
+            )
+        kind = _workflow_entry_kind(mode)
+        if kind != "regular file":
+            _workflow_policy_error(
+                f"workflow entry '{relative}' must be a regular file, "
+                f"not {kind}"
+            )
+        if not entry.name.endswith((".yml", ".yaml")):
+            _workflow_policy_error(
+                f"unexpected workflow entry '{relative}'; only regular "
+                ".yml and .yaml files are allowed"
+            )
+
+        path = os.path.join(workflow_dir, entry.name)
+        try:
+            with build_index._open_regular_no_follow(
+                path, binary=True
+            ) as handle:
+                payload = handle.read(
+                    MAX_CANDIDATE_WORKFLOW_FILE_BYTES + 1
+                )
+        except OSError as exc:
+            _workflow_policy_error(
+                f"cannot read workflow '{relative}' without following "
+                f"links ({exc})"
+            )
+        if len(payload) > MAX_CANDIDATE_WORKFLOW_FILE_BYTES:
+            _workflow_policy_error(
+                f"workflow '{relative}' exceeds the "
+                f"{MAX_CANDIDATE_WORKFLOW_FILE_BYTES}-byte file limit"
+            )
+        total_bytes += len(payload)
+        if total_bytes > MAX_CANDIDATE_WORKFLOW_TOTAL_BYTES:
+            _workflow_policy_error(
+                "candidate workflows exceed the "
+                f"{MAX_CANDIDATE_WORKFLOW_TOTAL_BYTES}-byte total limit"
+            )
+        payloads[relative] = payload
+
+    for required in sorted(REQUIRED_CANDIDATE_WORKFLOWS):
+        if required not in payloads:
+            _workflow_policy_error(
+                f"required workflow '{required}' is missing"
+            )
+    return payloads
+
+
+def _decode_candidate_workflow(payload, relative):
+    if payload.startswith(b"\xef\xbb\xbf"):
+        _workflow_policy_error(
+            f"workflow '{relative}' must not contain a UTF-8 BOM"
+        )
+    try:
+        text = payload.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        _workflow_policy_error(
+            f"workflow '{relative}' is not valid UTF-8 ({exc})"
+        )
+    if "\t" in text:
+        _workflow_policy_error(
+            f"workflow '{relative}' contains a tab; indentation and "
+            "scalars must use spaces"
+        )
+    if "\r" in text:
+        _workflow_policy_error(
+            f"workflow '{relative}' must use LF line endings"
+        )
+    for character in text:
+        codepoint = ord(character)
+        if character != "\n" and (codepoint < 0x20 or codepoint == 0x7f):
+            _workflow_policy_error(
+                f"workflow '{relative}' contains a disallowed control "
+                "character"
+            )
+    return text
+
+
+def _strip_workflow_comment(value, relative, line_number):
+    unused_outside_quotes, comment_index = _scan_workflow_text(
+        value,
+        relative,
+        line_number,
+        stop_at_comment=True,
+    )
+    del unused_outside_quotes
+    if comment_index is not None:
+        return value[:comment_index].rstrip()
+    return value.rstrip()
+
+
+def _scan_workflow_text(value, relative, line_number, stop_at_comment):
+    output = []
+    single_quoted = False
+    double_quoted = False
+    escaped = False
+    index = 0
+    while index < len(value):
+        character = value[index]
+        if single_quoted:
+            if character == "'":
+                if index + 1 < len(value) and value[index + 1] == "'":
+                    output.append(" ")
+                    output.append(" ")
+                    index += 2
+                    continue
+                single_quoted = False
+            output.append(" ")
+            index += 1
+            continue
+        if double_quoted:
+            output.append(" ")
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                double_quoted = False
+            index += 1
+            continue
+        if (
+            stop_at_comment
+            and character == "#"
+            and (index == 0 or value[index - 1].isspace())
+        ):
+            return "".join(output), index
+        output.append(character)
+        if character == "'":
+            single_quoted = True
+        elif character == '"':
+            double_quoted = True
+        index += 1
+    if single_quoted or double_quoted:
+        _workflow_policy_error(
+            f"workflow '{relative}' line {line_number} has an "
+            "unterminated quoted scalar"
+        )
+    return "".join(output), None
+
+
+def _outside_quoted_workflow_text(value, relative, line_number):
+    masked, unused_comment_index = _scan_workflow_text(
+        value,
+        relative,
+        line_number,
+        stop_at_comment=False,
+    )
+    del unused_comment_index
+    return masked
+
+
+def _workflow_scalar(value, relative, line_number, label):
+    value = value.strip()
+    if not value:
+        _workflow_policy_error(
+            f"workflow '{relative}' line {line_number} has an empty {label}"
+        )
+    if value.startswith('"'):
+        try:
+            decoded = json.loads(value)
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} has an "
+                f"unsupported double-quoted {label} ({exc})"
+            )
+        if not isinstance(decoded, str):
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} has a "
+                f"non-string {label}"
+            )
+        return decoded
+    if value.startswith("'"):
+        if len(value) < 2 or not value.endswith("'"):
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} has an "
+                f"unsupported single-quoted {label}"
+            )
+        return value[1:-1].replace("''", "'")
+    if value[0] in "{}[]|>&*!%@`" or value in {"~", "null", "Null", "NULL"}:
+        _workflow_policy_error(
+            f"workflow '{relative}' line {line_number} has an ambiguous "
+            f"or unsupported {label}"
+        )
+    if "${{" in value:
+        _workflow_policy_error(
+            f"workflow '{relative}' line {line_number} has a dynamic "
+            f"{label} that cannot be proven statically"
+        )
+    return value
+
+
+def _normalize_workflow_job_display_name(
+    value, relative, line_number, job_id
+):
+    if not value:
+        _workflow_policy_error(
+            f"workflow '{relative}' line {line_number} has an empty "
+            f"display name for job {job_id!r}"
+        )
+    collapsed = " ".join(value.split())
+    if (
+        collapsed != value
+        or any(character.isspace() and character != " " for character in value)
+        or any(
+            ord(character) < 0x20 or ord(character) == 0x7f
+            for character in value
+        )
+    ):
+        _workflow_policy_error(
+            f"workflow '{relative}' line {line_number} has a "
+            f"non-canonical display name for job {job_id!r}; job display "
+            "names must use single ASCII spaces only"
+        )
+    return collapsed
+
+
+def _split_workflow_mapping(value, relative, line_number):
+    outside_quotes = _outside_quoted_workflow_text(
+        value, relative, line_number
+    )
+    index = outside_quotes.find(":")
+    if index >= 0:
+        key_text = value[:index].strip()
+        if not key_text:
+            return None
+        key = _workflow_scalar(
+            key_text, relative, line_number, "mapping key"
+        )
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", key) and key != "<<":
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} has an "
+                f"unsupported mapping key {key!r}"
+            )
+        return key, value[index + 1:].strip()
+    return None
+
+
+def _candidate_workflow_records(text, relative):
+    records = []
+    block_parent_indent = None
+    for line_number, raw_line in enumerate(text.splitlines(), 1):
+        if not raw_line.strip():
+            continue
+        indent = len(raw_line) - len(raw_line.lstrip(" "))
+        if block_parent_indent is not None:
+            if indent > block_parent_indent:
+                continue
+            block_parent_indent = None
+
+        content = _strip_workflow_comment(
+            raw_line[indent:], relative, line_number
+        )
+        if not content:
+            continue
+        if content in {"---", "..."} or content.startswith("%"):
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} uses an "
+                "unsupported YAML document directive"
+            )
+        outside_quotes = _outside_quoted_workflow_text(
+            content, relative, line_number
+        )
+        if WORKFLOW_ANCHOR_OR_ALIAS_RE.search(outside_quotes):
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} uses a YAML "
+                "anchor or alias; indirection is not allowed"
+            )
+
+        sequence = False
+        mapping_text = content
+        if content.startswith("- "):
+            sequence = True
+            mapping_text = content[2:]
+            mapping_text = mapping_text.lstrip(" ")
+        elif content == "-":
+            sequence = True
+            mapping_text = ""
+
+        mapping = (
+            _split_workflow_mapping(
+                mapping_text, relative, line_number
+            )
+            if mapping_text
+            else None
+        )
+        if mapping is None and not sequence:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {line_number} uses a plain "
+                "scalar or continuation outside a block scalar; only "
+                "mapping or sequence entries are allowed"
+            )
+        if mapping is not None:
+            key, scalar = mapping
+            if key == "<<":
+                _workflow_policy_error(
+                    f"workflow '{relative}' line {line_number} uses a YAML "
+                    "merge key; indirection is not allowed"
+                )
+            if scalar.startswith(("|", ">")):
+                if not WORKFLOW_BLOCK_SCALAR_RE.fullmatch(scalar):
+                    _workflow_policy_error(
+                        f"workflow '{relative}' line {line_number} uses an "
+                        "unsupported block-scalar form"
+                    )
+                block_parent_indent = indent
+
+        records.append({
+            "line": line_number,
+            "indent": indent,
+            "sequence": sequence,
+            "mapping": mapping,
+        })
+    return records
+
+
+def _unique_mapping(records, indent, relative, label):
+    result = {}
+    for index, record in enumerate(records):
+        if record["indent"] != indent:
+            continue
+        mapping = record["mapping"]
+        if record["sequence"] or mapping is None:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {record['line']} has an "
+                f"unsupported {label} entry"
+            )
+        key, value = mapping
+        if key in result:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {record['line']} duplicates "
+                f"{label} key {key!r}"
+            )
+        result[key] = (value, record, index)
+    return result
+
+
+def _permission_checks_write(records, record_index, relative, location):
+    value, permission_record = records[record_index]["mapping"]
+    del value
+    raw_value = permission_record.strip()
+    if raw_value:
+        if raw_value.startswith(("{", "[")):
+            _workflow_policy_error(
+                f"workflow '{relative}' line "
+                f"{records[record_index]['line']} uses an inline permissions "
+                f"form at {location}; permissions must be a block mapping"
+            )
+        scalar = _workflow_scalar(
+            raw_value,
+            relative,
+            records[record_index]["line"],
+            "permissions value",
+        )
+        if scalar == "read-all":
+            return False
+        if scalar == "write-all":
+            _workflow_policy_error(
+                f"workflow '{relative}' line "
+                f"{records[record_index]['line']} uses forbidden "
+                f"permissions value 'write-all' at {location}; write "
+                "permissions must be explicit"
+            )
+        _workflow_policy_error(
+            f"workflow '{relative}' line "
+            f"{records[record_index]['line']} has unsupported permissions "
+            f"value {scalar!r} at {location}"
+        )
+
+    parent_indent = records[record_index]["indent"]
+    end = record_index + 1
+    while end < len(records) and records[end]["indent"] > parent_indent:
+        end += 1
+    children = records[record_index + 1:end]
+    if not children:
+        _workflow_policy_error(
+            f"workflow '{relative}' line "
+            f"{records[record_index]['line']} has an empty permissions "
+            f"mapping at {location}"
+        )
+    child_indent = min(record["indent"] for record in children)
+    scopes = _unique_mapping(
+        children, child_indent, relative, "permissions"
+    )
+    for record in children:
+        if record["indent"] != child_indent:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {record['line']} has a nested "
+                f"or ambiguous permissions form at {location}"
+            )
+
+    checks_write = False
+    for scope, (scope_value, record, unused_index) in scopes.items():
+        del unused_index
+        if not scope_value:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {record['line']} has an empty "
+                f"permission value for {scope!r} at {location}"
+            )
+        if scope_value.startswith(("{", "[")):
+            _workflow_policy_error(
+                f"workflow '{relative}' line {record['line']} uses an "
+                f"inline permission value for {scope!r} at {location}"
+            )
+        scalar = _workflow_scalar(
+            scope_value,
+            relative,
+            record["line"],
+            f"permission value for {scope!r}",
+        )
+        if scalar not in {"read", "write", "none"}:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {record['line']} has "
+                f"unsupported permission value {scalar!r} for {scope!r}"
+            )
+        if scope == "checks" and scalar == "write":
+            checks_write = True
+    return checks_write
+
+
+def _parse_candidate_workflow(payload, relative):
+    text = _decode_candidate_workflow(payload, relative)
+    records = _candidate_workflow_records(text, relative)
+    if not records:
+        _workflow_policy_error(f"workflow '{relative}' is empty")
+    if records[0]["indent"] != 0:
+        _workflow_policy_error(
+            f"workflow '{relative}' must begin with a top-level mapping"
+        )
+
+    root = _unique_mapping(records, 0, relative, "top-level")
+    if "jobs" not in root:
+        _workflow_policy_error(
+            f"workflow '{relative}' has no top-level jobs mapping"
+        )
+    jobs_value, jobs_record, jobs_record_index = root["jobs"]
+    if jobs_value:
+        _workflow_policy_error(
+            f"workflow '{relative}' line {jobs_record['line']} uses an "
+            "inline or scalar jobs form"
+        )
+
+    if "permissions" in root:
+        unused_value, permission_record, permission_index = root["permissions"]
+        del unused_value, permission_record
+        if _permission_checks_write(
+            records,
+            permission_index,
+            relative,
+            "top level",
+        ):
+            _workflow_policy_error(
+                f"top-level semantic 'checks: write' is forbidden in "
+                f"workflow '{relative}'"
+            )
+
+    jobs_end = jobs_record_index + 1
+    while (
+        jobs_end < len(records)
+        and records[jobs_end]["indent"] > jobs_record["indent"]
+    ):
+        jobs_end += 1
+    job_records = records[jobs_record_index + 1:jobs_end]
+    if not job_records:
+        _workflow_policy_error(
+            f"workflow '{relative}' has an empty jobs mapping"
+        )
+    job_indent = min(record["indent"] for record in job_records)
+    job_headers = _unique_mapping(
+        job_records, job_indent, relative, "job"
+    )
+    if not job_headers:
+        _workflow_policy_error(
+            f"workflow '{relative}' has no statically identifiable jobs"
+        )
+
+    jobs = {}
+    ordered_headers = sorted(
+        (
+            (header_index, job_id, header_value, header_record)
+            for job_id, (
+                header_value,
+                header_record,
+                header_index,
+            ) in job_headers.items()
+        ),
+        key=lambda item: item[0],
+    )
+    for position, (
+        relative_header_index,
+        job_id,
+        header_value,
+        header_record,
+    ) in enumerate(ordered_headers):
+        if not WORKFLOW_JOB_ID_RE.fullmatch(job_id):
+            _workflow_policy_error(
+                f"workflow '{relative}' line {header_record['line']} has "
+                f"unsupported job id {job_id!r}"
+            )
+        if header_value:
+            _workflow_policy_error(
+                f"workflow '{relative}' line {header_record['line']} uses "
+                f"an inline or scalar definition for job {job_id!r}"
+            )
+        block_start = relative_header_index
+        block_end = (
+            ordered_headers[position + 1][0]
+            if position + 1 < len(ordered_headers)
+            else len(job_records)
+        )
+        block = job_records[block_start:block_end]
+        descendants = block[1:]
+        if not descendants:
+            _workflow_policy_error(
+                f"workflow '{relative}' job {job_id!r} is empty"
+            )
+        property_indent = min(
+            record["indent"] for record in descendants
+        )
+        direct = _unique_mapping(
+            descendants,
+            property_indent,
+            relative,
+            f"job {job_id!r}",
+        )
+        if not direct:
+            _workflow_policy_error(
+                f"workflow '{relative}' job {job_id!r} has no static "
+                "properties"
+            )
+
+        display_name = None
+        if "name" in direct:
+            name_value, name_record, unused_index = direct["name"]
+            del unused_index
+            display_name = _normalize_workflow_job_display_name(
+                _workflow_scalar(
+                    name_value,
+                    relative,
+                    name_record["line"],
+                    f"display name for job {job_id!r}",
+                ),
+                relative,
+                name_record["line"],
+                job_id,
+            )
+
+        checks_write = False
+        if "permissions" in direct:
+            unused_value, unused_record, permission_relative_index = (
+                direct["permissions"]
+            )
+            del unused_value, unused_record
+            permission_global_index = (
+                jobs_record_index + 1
+                + block_start
+                + 1
+                + permission_relative_index
+            )
+            checks_write = _permission_checks_write(
+                records,
+                permission_global_index,
+                relative,
+                f"job {job_id!r}",
+            )
+
+        checkout_refs = []
+        for record in block:
+            mapping = record["mapping"]
+            if mapping is None or mapping[0] != "uses":
+                continue
+            action = _workflow_scalar(
+                mapping[1],
+                relative,
+                record["line"],
+                f"uses value in job {job_id!r}",
+            )
+            if action.casefold().startswith("actions/checkout@"):
+                checkout_refs.append((action, record["line"]))
+
+        jobs[job_id] = {
+            "display_name": display_name,
+            "checks_write": checks_write,
+            "checkout_refs": checkout_refs,
+        }
+    return jobs
+
+
+def _validate_candidate_workflow_policy(candidate_root):
+    payloads = _candidate_workflow_payloads(candidate_root)
+    parsed = {}
+    checks_writer_seen = False
+
+    for relative in sorted(payloads):
+        jobs = _parse_candidate_workflow(payloads[relative], relative)
+        parsed[relative] = jobs
+        for job_id in sorted(jobs):
+            job = jobs[job_id]
+            if job["checks_write"]:
+                if (
+                    relative != PRIVILEGED_WORKFLOW_PATH
+                    or job_id != PRIVILEGED_JOB_ID
+                ):
+                    _workflow_policy_error(
+                        "semantic 'checks: write' is allowed only at "
+                        f"'{PRIVILEGED_WORKFLOW_PATH}' job "
+                        f"'{PRIVILEGED_JOB_ID}'; found it at "
+                        f"'{relative}' job '{job_id}'"
+                    )
+                checks_writer_seen = True
+            if (
+                job["display_name"] == PROVENANCE_JOB_NAME
+                and (
+                    relative != PROVENANCE_WORKFLOW_PATH
+                    or job_id != PROVENANCE_JOB_ID
+                )
+            ):
+                _workflow_policy_error(
+                    f"job display name '{PROVENANCE_JOB_NAME}' is reserved "
+                    f"for '{PROVENANCE_WORKFLOW_PATH}' job "
+                    f"'{PROVENANCE_JOB_ID}'; found it at '{relative}' job "
+                    f"'{job_id}'"
+                )
+            if relative in REQUIRED_CANDIDATE_WORKFLOWS:
+                for checkout_ref, line_number in job["checkout_refs"]:
+                    expected = (
+                        "actions/checkout@" + PINNED_CHECKOUT_ACTION_SHA
+                    )
+                    if checkout_ref != expected:
+                        _workflow_policy_error(
+                            f"workflow '{relative}' line {line_number} must "
+                            f"pin actions/checkout to "
+                            f"'{PINNED_CHECKOUT_ACTION_SHA}'"
+                        )
+
+    provenance_jobs = parsed[PROVENANCE_WORKFLOW_PATH]
+    if PROVENANCE_JOB_ID not in provenance_jobs:
+        _workflow_policy_error(
+            f"required workflow '{PROVENANCE_WORKFLOW_PATH}' must retain "
+            f"job '{PROVENANCE_JOB_ID}'"
+        )
+    provenance_job = provenance_jobs[PROVENANCE_JOB_ID]
+    if provenance_job["display_name"] != PROVENANCE_JOB_NAME:
+        _workflow_policy_error(
+            f"required workflow '{PROVENANCE_WORKFLOW_PATH}' job "
+            f"'{PROVENANCE_JOB_ID}' must declare display name exactly "
+            f"'{PROVENANCE_JOB_NAME}'"
+        )
+    if len(provenance_job["checkout_refs"]) != 2:
+        _workflow_policy_error(
+            f"required workflow '{PROVENANCE_WORKFLOW_PATH}' job "
+            f"'{PROVENANCE_JOB_ID}' must retain exactly two pinned "
+            "actions/checkout steps"
+        )
+
+    privileged_jobs = parsed[PRIVILEGED_WORKFLOW_PATH]
+    if PRIVILEGED_JOB_ID not in privileged_jobs:
+        _workflow_policy_error(
+            f"required workflow '{PRIVILEGED_WORKFLOW_PATH}' must retain "
+            f"job '{PRIVILEGED_JOB_ID}'"
+        )
+    privileged_job = privileged_jobs[PRIVILEGED_JOB_ID]
+    if not checks_writer_seen or not privileged_job["checks_write"]:
+        _workflow_policy_error(
+            f"required workflow '{PRIVILEGED_WORKFLOW_PATH}' job "
+            f"'{PRIVILEGED_JOB_ID}' must explicitly request job-scoped "
+            "'checks: write'"
+        )
+    if len(privileged_job["checkout_refs"]) != 1:
+        _workflow_policy_error(
+            f"required workflow '{PRIVILEGED_WORKFLOW_PATH}' job "
+            f"'{PRIVILEGED_JOB_ID}' must retain exactly one pinned "
+            "actions/checkout step"
+        )
+
+
 def _validate_exact_submission(root, slug, label, license_value):
     """Validate one exact submissions/<slug>/ tree without touching siblings."""
     submissions = os.path.join(root, "submissions")
@@ -1048,6 +1819,7 @@ def verify(
     _require_controller_contract()
     candidate_root = _require_real_root(candidate_root, "candidate root")
     base_root = _require_real_root(base_root, "trusted base root")
+    _validate_candidate_workflow_policy(candidate_root)
     context = _validate_pr_snapshot(event, evidence)
     records = _changed_file_records(context["files"])
     png_slugs = _png_submission_slugs(records, candidate_root, base_root)
@@ -1209,11 +1981,14 @@ def main(argv=None):
             args.trusted_base_sha,
         )
     except AttestationError as exc:
-        print(f"error: reviewed PNG provenance rejected: {exc}", file=sys.stderr)
+        print(f"error: protected PR attestation rejected: {exc}", file=sys.stderr)
         return 1
 
     if result is None:
-        print("no reviewed PNG change; provenance check not applicable")
+        print(
+            "candidate workflow policy valid; no reviewed PNG change; "
+            "PNG provenance check not applicable"
+        )
     elif result.startswith(TAKEDOWN_RESULT_PREFIX):
         slug = result[len(TAKEDOWN_RESULT_PREFIX):]
         print(

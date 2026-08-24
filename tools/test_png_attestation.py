@@ -55,6 +55,13 @@ class TestPngAttestation(BuildIndexTestCase):
         self.base_root = os.path.join(self.tmp, "trusted-base")
         os.mkdir(self.base_root)
         os.mkdir(os.path.join(self.base_root, "submissions"))
+        self.candidate_workflow_dir = (
+            Path(self.tmp) / ".github" / "workflows"
+        )
+        self.candidate_workflow_dir.mkdir(parents=True)
+        for relative in attestation.REQUIRED_CANDIDATE_WORKFLOWS:
+            source = ROOT / relative
+            shutil.copy2(source, self.candidate_workflow_dir / source.name)
         shutil.copy2(
             self.neighborhood_path(),
             os.path.join(self.base_root, "neighborhood.json"),
@@ -226,8 +233,485 @@ class TestPngAttestation(BuildIndexTestCase):
         for record in self.evidence["files"]:
             record["status"] = "removed"
 
+    def candidate_workflow_path(self, name):
+        return self.candidate_workflow_dir / name
+
+    def write_candidate_workflow(self, name, content):
+        path = self.candidate_workflow_path(name)
+        if isinstance(content, bytes):
+            path.write_bytes(content)
+        else:
+            path.write_text(content, encoding="utf-8")
+        return path
+
+    def configure_non_png(self, slug="outside-svg"):
+        shutil.rmtree(os.path.join(self.submissions_dir, self.slug))
+        write_submission(
+            self.submissions_dir,
+            slug,
+            meta_overrides={"contributor": "outside-user"},
+        )
+        self.event, self.evidence = self.make_evidence(
+            slug,
+            "piece.svg",
+            author="outside-user",
+            head_repo="outside-user/public-art-collective",
+            fork=True,
+            branch=f"art/{slug}",
+        )
+
+    def add_workflow_file_evidence(self, path, status="added"):
+        relative = str(path.relative_to(self.tmp))
+        self.evidence["files"].append({
+            "filename": relative,
+            "status": status,
+            "sha": git_blob_sha(path),
+        })
+        self.update_both_prs(
+            lambda pr: pr.update(
+                changed_files=len(self.evidence["files"])
+            )
+        )
+
     def test_valid_controller_fixture_is_attested(self):
         self.assertEqual(self.slug, self.verify())
+
+    def test_unrelated_pr_with_unchanged_safe_workflows_passes(self):
+        self.evidence["files"] = [{
+            "filename": "README.md",
+            "status": "modified",
+            "sha": "3" * 40,
+        }]
+        self.update_both_prs(lambda pr: pr.update(changed_files=1))
+        self.evidence["commits"] = None
+        self.evidence["head_commit"] = None
+        self.assertIsNone(self.verify())
+
+    def test_candidate_workflow_policy_accepts_safe_yaml_without_execution(self):
+        self.configure_non_png()
+        sentinel = Path(self.tmp) / "candidate-workflow-executed"
+        workflow = self.write_candidate_workflow(
+            "safe-unrelated.yaml",
+            (
+                "name: Safe unrelated workflow\n"
+                "on:\n"
+                "  pull_request:\n"
+                "permissions:\n"
+                "  contents: read\n"
+                "jobs:\n"
+                "  safe:\n"
+                "    name: Safe unrelated check\n"
+                "    runs-on: ubuntu-latest\n"
+                "    permissions:\n"
+                "      contents: read\n"
+                "    steps:\n"
+                "      - name: Candidate script remains data\n"
+                "        run: |\n"
+                f"          touch {sentinel}\n"
+            ),
+        )
+        self.add_workflow_file_evidence(workflow)
+
+        self.assertIsNone(self.verify())
+        self.assertFalse(sentinel.exists())
+
+    def test_candidate_workflow_policy_accepts_current_required_workflows(self):
+        attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_rogue_checks_write(self):
+        self.configure_non_png()
+        workflow = self.write_candidate_workflow(
+            "rogue.yaml",
+            (
+                "name: Rogue check writer\n"
+                "on: pull_request\n"
+                "jobs:\n"
+                "  rogue:\n"
+                "    name: Rogue\n"
+                "    runs-on: ubuntu-latest\n"
+                "    permissions:\n"
+                "      checks: write\n"
+                "      contents: read\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        self.add_workflow_file_evidence(workflow)
+
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"semantic 'checks: write' is allowed only.*rogue\.yaml.*rogue",
+        ):
+            self.verify()
+
+    def test_candidate_workflow_policy_rejects_top_level_checks_write(self):
+        self.write_candidate_workflow(
+            "top-level.yml",
+            (
+                "name: Top-level check writer\n"
+                "on: pull_request\n"
+                "permissions:\n"
+                "  checks: write\n"
+                "jobs:\n"
+                "  harmless:\n"
+                "    name: Harmless\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"top-level semantic 'checks: write' is forbidden.*top-level\.yml",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_recognizes_quoted_checks_write(self):
+        self.write_candidate_workflow(
+            "quoted.yml",
+            (
+                "name: Quoted check writer\n"
+                "on: pull_request\n"
+                "jobs:\n"
+                "  quoted:\n"
+                "    name: Quoted\n"
+                "    runs-on: ubuntu-latest\n"
+                "    permissions:\n"
+                "      \"checks\": 'write' # still semantic write\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"semantic 'checks: write' is allowed only.*quoted\.yml",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_plain_scalar_name_continuation(
+        self,
+    ):
+        self.write_candidate_workflow(
+            "duplicate-context.yml",
+            (
+                "name: Duplicate context\n"
+                "on: pull_request\n"
+                "jobs:\n"
+                "  duplicate:\n"
+                "    name: Verify\n"
+                "      controller provenance\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"duplicate-context\.yml.*plain scalar or continuation "
+            r"outside a block scalar",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_split_plain_scalar_name(
+        self,
+    ):
+        self.write_candidate_workflow(
+            "duplicate-context-two.yml",
+            (
+                "name: Duplicate context two\n"
+                "on: pull_request\n"
+                "jobs:\n"
+                "  duplicate:\n"
+                "    name: Verify controller\n"
+                "      provenance\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"duplicate-context-two\.yml.*plain scalar or continuation "
+            r"outside a block scalar",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_noncanonical_display_name(self):
+        self.write_candidate_workflow(
+            "display-name-whitespace.yml",
+            (
+                "name: Duplicate context spacing\n"
+                "on: pull_request\n"
+                "jobs:\n"
+                "  duplicate:\n"
+                "    name: 'Verify  controller provenance'\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"display-name-whitespace\.yml.*non-canonical display name",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_split_workflow_mapping_handles_doubled_single_quotes(self):
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"quoted-key\.yml.*unsupported mapping key \"name's\"",
+        ):
+            attestation._split_workflow_mapping(
+                "'name''s': value",
+                "quoted-key.yml",
+                7,
+            )
+
+    def test_candidate_workflow_policy_rejects_inline_permissions(self):
+        self.write_candidate_workflow(
+            "inline.yml",
+            (
+                "name: Inline permissions\n"
+                "on: pull_request\n"
+                "permissions: { checks: write }\n"
+                "jobs:\n"
+                "  inline:\n"
+                "    name: Inline\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"inline permissions form.*top level",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_write_all(self):
+        self.write_candidate_workflow(
+            "write-all.yml",
+            (
+                "name: Implicit check writer\n"
+                "on: pull_request\n"
+                "jobs:\n"
+                "  implicit:\n"
+                "    name: Implicit\n"
+                "    runs-on: ubuntu-latest\n"
+                "    permissions: 'write-all'\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"forbidden permissions value 'write-all'.*job 'implicit'",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_anchors_and_aliases(self):
+        for name, permissions in (
+            (
+                "anchor.yml",
+                "permissions: &danger\n  checks: write\n",
+            ),
+            (
+                "alias.yml",
+                "permissions: *danger\n",
+            ),
+        ):
+            with self.subTest(name=name):
+                path = self.write_candidate_workflow(
+                    name,
+                    (
+                        "name: YAML indirection\n"
+                        "on: pull_request\n"
+                        + permissions
+                        + "jobs:\n"
+                        "  indirection:\n"
+                        "    name: Indirection\n"
+                        "    runs-on: ubuntu-latest\n"
+                        "    steps:\n"
+                        "      - run: echo no\n"
+                    ),
+                )
+                with self.assertRaisesRegex(
+                    attestation.AttestationError,
+                    r"YAML anchor or alias",
+                ):
+                    attestation._validate_candidate_workflow_policy(self.tmp)
+                path.unlink()
+
+    def test_candidate_workflow_policy_rejects_duplicate_context_producer(self):
+        self.write_candidate_workflow(
+            "duplicate-context.yml",
+            (
+                "name: Duplicate context\n"
+                "on: pull_request\n"
+                "permissions:\n"
+                "  contents: read\n"
+                "jobs:\n"
+                "  duplicate:\n"
+                "    name: \"Verify controller provenance\" # reserved\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: echo no\n"
+            ),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"job display name 'Verify controller provenance' is reserved"
+            r".*duplicate-context\.yml.*duplicate",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_renamed_required_job(self):
+        path = self.candidate_workflow_path(
+            "reviewed-png-attestation.yml"
+        )
+        workflow = path.read_text(encoding="utf-8")
+        old = "    name: Verify controller provenance\n"
+        self.assertIn(old, workflow)
+        path.write_text(
+            workflow.replace(
+                old,
+                "    name: Renamed controller provenance\n",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"must declare display name exactly 'Verify controller provenance'",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_renamed_required_job_id(self):
+        path = self.candidate_workflow_path(
+            "reviewed-png-attestation.yml"
+        )
+        workflow = path.read_text(encoding="utf-8")
+        old = "  verify-controller-provenance:\n"
+        self.assertIn(old, workflow)
+        path.write_text(
+            workflow.replace(
+                old,
+                "  renamed-controller-provenance:\n",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"display name 'Verify controller provenance' is reserved",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_deleted_required_workflow(self):
+        for relative in sorted(attestation.REQUIRED_CANDIDATE_WORKFLOWS):
+            with self.subTest(relative=relative):
+                path = Path(self.tmp) / relative
+                payload = path.read_bytes()
+                path.unlink()
+                with self.assertRaisesRegex(
+                    attestation.AttestationError,
+                    rf"required workflow '{re.escape(relative)}' is missing",
+                ):
+                    attestation._validate_candidate_workflow_policy(self.tmp)
+                path.write_bytes(payload)
+
+    def test_candidate_workflow_policy_rejects_invalid_utf8(self):
+        self.write_candidate_workflow(
+            "invalid-encoding.yaml",
+            b"name: invalid\njobs:\n  invalid:\n    name: \xff\n",
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"invalid-encoding\.yaml.*not valid UTF-8",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_oversized_file(self):
+        self.write_candidate_workflow(
+            "oversized.yml",
+            b"#" * (attestation.MAX_CANDIDATE_WORKFLOW_FILE_BYTES + 1),
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"oversized\.yml.*exceeds the .*byte file limit",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_oversized_file_count(self):
+        additional = attestation.MAX_CANDIDATE_WORKFLOW_FILES - 1
+        for index in range(additional):
+            self.write_candidate_workflow(
+                f"count-{index:03d}.yml",
+                (
+                    f"name: Count {index}\n"
+                    "jobs:\n"
+                    f"  count_{index}:\n"
+                    f"    name: Count {index}\n"
+                    "    runs-on: ubuntu-latest\n"
+                ),
+            )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            rf"contains more than "
+            rf"{attestation.MAX_CANDIDATE_WORKFLOW_FILES} entries",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_symlink(self):
+        path = self.candidate_workflow_path("linked.yml")
+        os.symlink("submissions-index.yml", path)
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"linked\.yml.*regular file, not symlink",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_special_file(self):
+        if not hasattr(os, "mkfifo"):
+            self.skipTest("FIFO creation is unavailable")
+        path = self.candidate_workflow_path("special.yml")
+        os.mkfifo(path)
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"special\.yml.*regular file, not special file",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_nested_workflow_directory(self):
+        nested = self.candidate_workflow_path("nested")
+        nested.mkdir()
+        (nested / "escape.yml").write_text(
+            "jobs: {}\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"workflow entry .*nested.*regular file, not directory",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
+
+    def test_candidate_workflow_policy_rejects_unpinned_required_checkout(self):
+        path = self.candidate_workflow_path(
+            "reviewed-png-attestation.yml"
+        )
+        workflow = path.read_text(encoding="utf-8")
+        pinned = "actions/checkout@" + attestation.PINNED_CHECKOUT_ACTION_SHA
+        self.assertIn(pinned, workflow)
+        path.write_text(
+            workflow.replace(pinned, "actions/checkout@v4", 1),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            attestation.AttestationError,
+            r"must pin actions/checkout to '[0-9a-f]{40}'",
+        ):
+            attestation._validate_candidate_workflow_policy(self.tmp)
 
     def test_controller_contract_fixture_matches_production_constants(self):
         contract_path = (
@@ -896,7 +1380,8 @@ class TestPngAttestation(BuildIndexTestCase):
         rc, stdout, stderr = self.run_cli()
         self.assertEqual(0, rc, stderr)
         self.assertEqual(
-            "no reviewed PNG change; provenance check not applicable\n",
+            "candidate workflow policy valid; no reviewed PNG change; "
+            "PNG provenance check not applicable\n",
             stdout,
         )
         self.assertNotIn("structural validation", stdout)
@@ -953,7 +1438,7 @@ class TestAttestationWorkflowSource(unittest.TestCase):
 
     def test_candidate_checkout_remains_data_only(self):
         self.assertIn(
-            "Checkout untrusted submission bytes",
+            "Checkout untrusted candidate data",
             self.workflow,
         )
         self.assertIn(
@@ -961,7 +1446,12 @@ class TestAttestationWorkflowSource(unittest.TestCase):
             self.workflow,
         )
         self.assertIn("path: candidate", self.workflow)
-        self.assertIn("sparse-checkout: submissions", self.workflow)
+        self.assertIn(
+            "sparse-checkout: |\n"
+            "            submissions\n"
+            "            .github/workflows\n",
+            self.workflow,
+        )
         self.assertNotIn("python3 candidate/", self.workflow)
         self.assertNotIn("git -C candidate", self.workflow)
         self.assertEqual(2, self.workflow.count("persist-credentials: false"))
@@ -971,7 +1461,12 @@ class TestAttestationWorkflowSource(unittest.TestCase):
         self.assertIn("pull-requests: read", self.workflow)
         self.assertNotIn("contents: write", self.workflow)
         self.assertNotIn("id-token: write", self.workflow)
-        self.assertIn("sparse-checkout: submissions", self.workflow)
+        self.assertIn(
+            "sparse-checkout: |\n"
+            "            submissions\n"
+            "            .github/workflows\n",
+            self.workflow,
+        )
         self.assertNotRegex(
             self.workflow,
             re.compile(r"run:.*(?:candidate/tools|candidate/\\.github)"),
@@ -982,7 +1477,7 @@ class TestAttestationWorkflowSource(unittest.TestCase):
             ROOT / ".github" / "workflows" / "submissions-index.yml"
         ).read_text(encoding="utf-8")
         self.assertIn(
-            '- ".github/workflows/reviewed-png-attestation.yml"',
+            '- ".github/workflows/**"',
             validation_workflow,
         )
         self.assertIn('-p "test_*.py"', validation_workflow)

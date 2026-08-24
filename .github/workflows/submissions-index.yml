@@ -20,8 +20,7 @@ on:
       - "index.html"
       - "view.html"
       - "neighborhood.json"
-      - ".github/workflows/submissions-index.yml"
-      - ".github/workflows/reviewed-png-attestation.yml"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths-ignore:
@@ -33,7 +32,7 @@ permissions:
 
 concurrency:
   group: submissions-index-validate-${{ github.event_name }}-${{ github.ref }}-${{ github.event.pull_request.number || 'push' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate:
@@ -42,7 +41,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run self-tests
         run: python3 -m unittest discover -s tools -p "test_*.py" -v
@@ -64,15 +63,15 @@ jobs:
       && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
+      checks: write
       contents: write
-      pull-requests: write
     # Serialize writer runs so two pushes landing close together never race
     # each other to commit submissions/index.json; queue, don't cancel.
     concurrency:
       group: submissions-index-writer-main
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
           persist-credentials: true
@@ -82,67 +81,313 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Regenerate and push (retry, then fall back to an operator PR)
+      - name: Regenerate, attest, and update protected main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          MAX_ATTEMPTS=5
-          pushed=0
+
+          readonly MAX_ATTEMPTS=5
+          readonly INDEX_PATH="submissions/index.json"
+          readonly CHECK_NAME="Verify controller provenance"
+          readonly CHECK_APP_SLUG="github-actions"
+          readonly CHECK_APP_ID="15368"
+          readonly MAX_AUDIT_CHARS=2000
+          readonly MAX_SAME_SHA_PUSH_ATTEMPTS=4
+          readonly PROPAGATION_DELAY_BASE_SECONDS=3
+          readonly MAX_PROPAGATION_WAIT_SECONDS=18
+          readonly BRANCH_PREFIX="bot/regenerate-index-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          pushed_temp_branches=""
+
+          fail() {
+            echo "::error::$1"
+            exit 1
+          }
+
+          forget_temp_branch() {
+            local deleted_branch="$1"
+            local branch
+            local remaining=""
+
+            while IFS= read -r branch; do
+              if [[ -n "$branch" && "$branch" != "$deleted_branch" ]]; then
+                if [[ -n "$remaining" ]]; then
+                  remaining+=$'\n'
+                fi
+                remaining+="$branch"
+              fi
+            done <<< "$pushed_temp_branches"
+            pushed_temp_branches="$remaining"
+          }
+
+          track_temp_branch() {
+            local branch="$1"
+
+            if [[ -n "$pushed_temp_branches" ]]; then
+              pushed_temp_branches+=$'\n'
+            fi
+            pushed_temp_branches+="$branch"
+          }
+
+          delete_temp_branch() {
+            local branch="$1"
+            local reason="$2"
+
+            if git push origin --delete "$branch"; then
+              forget_temp_branch "$branch"
+            else
+              echo "::warning::Could not delete temporary branch ${branch} (${reason}); its unique name will never be reused."
+            fi
+            return 0
+          }
+
+          cleanup_temp_branches() {
+            local cleanup_reason="$1"
+            local branch
+
+            while IFS= read -r branch; do
+              [[ -n "$branch" ]] || continue
+              if git push origin --delete "$branch"; then
+                echo "Deleted temporary branch ${branch} during ${cleanup_reason}."
+              else
+                echo "::warning::Could not delete temporary branch ${branch} during ${cleanup_reason}; the original signal/exit status is preserved."
+              fi
+            done <<< "$pushed_temp_branches"
+            return 0
+          }
+
+          cleanup_on_exit() {
+            local primary_status="$?"
+
+            trap - EXIT INT TERM
+            cleanup_temp_branches "final cleanup"
+            exit "$primary_status"
+          }
+
+          handle_signal() {
+            local signal_name="$1"
+            local signal_status="$2"
+
+            trap - EXIT INT TERM
+            echo "::error::Received ${signal_name}; cleaning temporary branches before exiting with status ${signal_status}."
+            cleanup_temp_branches "${signal_name} signal cleanup"
+            exit "$signal_status"
+          }
+
+          trap cleanup_on_exit EXIT
+          trap 'handle_signal INT 130' INT
+          trap 'handle_signal TERM 143' TERM
+
+          check_record_id=""
+          verify_check_record() {
+            local record="$1"
+            local expected_sha="$2"
+            local expected_external_id="$3"
+            local id name head_sha status conclusion app_slug app_id external_id extra
+
+            [[ "$record" != *$'\n'* ]] \
+              || fail "GitHub returned a malformed multi-line Check Run record."
+            IFS=$'\t' read -r \
+              id name head_sha status conclusion app_slug app_id external_id extra \
+              <<< "$record"
+
+            [[ "$id" =~ ^[1-9][0-9]*$ ]] \
+              || fail "GitHub returned an invalid Check Run id."
+            [[ -z "${extra:-}" ]] \
+              || fail "GitHub returned an invalid Check Run field count."
+            [[ "$name" == "$CHECK_NAME" ]] \
+              || fail "Check Run name did not match the required context."
+            [[ "$head_sha" == "$expected_sha" ]] \
+              || fail "Check Run head SHA did not match the validated commit."
+            [[ "$status" == "completed" && "$conclusion" == "success" ]] \
+              || fail "Check Run was not completed successfully."
+            [[ "$app_slug" == "$CHECK_APP_SLUG" && "$app_id" == "$CHECK_APP_ID" ]] \
+              || fail "Check Run was not issued by GitHub Actions integration 15368."
+            [[ "$external_id" == "$expected_external_id" ]] \
+              || fail "Check Run external id did not match this transaction."
+
+            check_record_id="$id"
+          }
+
+          handle_main_race() {
+            local branch="$1"
+            local attempt="$2"
+            local phase="$3"
+
+            echo "Main moved ${phase}; this checked commit will not be reused."
+            delete_temp_branch "$branch" "main raced; retry cleanup is warning-only because branch names are unique"
+            if [[ "$attempt" -ge "$MAX_ATTEMPTS" ]]; then
+              echo "::endgroup::"
+              fail "Main raced all ${MAX_ATTEMPTS} bounded protected update attempts. Temporary-branch cleanup was attempted, no fallback PR was opened, and a newer main push will enqueue a fresh writer run."
+            fi
+            echo "Rebuilding from the fresh main tip with a new commit and Check Run."
+            echo "::endgroup::"
+          }
+
+          completed=0
 
           for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
             echo "::group::Attempt ${attempt}/${MAX_ATTEMPTS}"
-            git fetch origin main
-            git checkout -B main origin/main
+            branch="${BRANCH_PREFIX}-${attempt}"
+
+            git fetch --no-tags origin \
+              +refs/heads/main:refs/remotes/origin/main
+            base_sha="$(git rev-parse refs/remotes/origin/main^{commit})"
+            git checkout -B "$branch" "$base_sha"
+            [[ "$(git rev-parse HEAD^{commit})" == "$base_sha" ]] \
+              || fail "Temporary branch did not start at the fetched main tip."
+
+            python3 -m unittest discover -s tools -p "test_*.py" -v
+            python3 tools/build_index.py --validate
             python3 tools/build_index.py --write
             python3 tools/build_index.py --check
 
-            if git diff --quiet -- submissions/index.json; then
+            if git diff --quiet -- "$INDEX_PATH"; then
+              git diff --quiet \
+                || fail "Validation changed a tracked path other than ${INDEX_PATH}."
+              [[ -z "$(git ls-files --others --exclude-standard)" ]] \
+                || fail "Validation created an unexpected untracked path."
               echo "submissions/index.json already current at origin/main tip."
-              pushed=1
+              completed=1
               echo "::endgroup::"
               break
             fi
 
-            git add submissions/index.json
+            changed_paths="$(git diff --name-only --no-renames)"
+            [[ "$changed_paths" == "$INDEX_PATH" ]] \
+              || fail "Regeneration changed a path other than ${INDEX_PATH}."
+            [[ -z "$(git ls-files --others --exclude-standard)" ]] \
+              || fail "Regeneration created an unexpected untracked path."
+            [[ -f "$INDEX_PATH" && ! -L "$INDEX_PATH" ]] \
+              || fail "${INDEX_PATH} is not a regular non-symlink file."
+
+            git add -- "$INDEX_PATH"
+            git diff --quiet \
+              || fail "An unstaged tracked change remained after staging the index."
+            staged_paths="$(git diff --cached --name-only --no-renames)"
+            [[ "$staged_paths" == "$INDEX_PATH" ]] \
+              || fail "The staged commit contains a path other than ${INDEX_PATH}."
+            index_entry="$(git ls-files -s -- "$INDEX_PATH")"
+            [[ "$index_entry" =~ ^100644[[:space:]][0-9a-f]{40,64}[[:space:]]0[[:space:]]submissions/index\.json$ ]] \
+              || fail "${INDEX_PATH} does not have regular-file Git mode 100644."
+
             git commit \
               -m "chore(index): regenerate submissions/index.json" \
               -m "Automated by .github/workflows/submissions-index.yml (tools/build_index.py --write)."
 
-            if git push origin HEAD:main; then
-              echo "Pushed regenerated index.json directly to main."
-              pushed=1
-              echo "::endgroup::"
+            commit_sha="$(git rev-parse HEAD^{commit})"
+            parent_record="$(git rev-list --parents -n 1 "$commit_sha")"
+            [[ "$parent_record" == "$commit_sha $base_sha" ]] \
+              || fail "Index commit does not have exactly the fetched main tip as its sole parent."
+            commit_paths="$(git diff-tree --no-commit-id --name-only --no-renames -r "$commit_sha")"
+            [[ "$commit_paths" == "$INDEX_PATH" ]] \
+              || fail "Committed path proof did not contain exactly ${INDEX_PATH}."
+            tree_entry="$(git ls-tree "$commit_sha" -- "$INDEX_PATH")"
+            [[ "$tree_entry" =~ ^100644[[:space:]]blob[[:space:]][0-9a-f]{40,64}[[:space:]]submissions/index\.json$ ]] \
+              || fail "Committed index is not a regular 100644 blob."
+            tree_sha="$(git show -s --format=%T "$commit_sha")"
+
+            track_temp_branch "$branch"
+            git push origin "${commit_sha}:refs/heads/${branch}" \
+              || fail "Could not push temporary branch ${branch}."
+
+            external_id="submissions-index:${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT}:${attempt}:${commit_sha}"
+            audit_summary="$(printf '%s\n' \
+              'Trusted workflow: .github/workflows/submissions-index.yml' \
+              "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} (workflow attempt ${GITHUB_RUN_ATTEMPT}; transaction ${attempt}/${MAX_ATTEMPTS})" \
+              "Base: ${base_sha}" \
+              "Head: ${commit_sha}" \
+              "Tree: ${tree_sha}" \
+              "Path: ${INDEX_PATH} (regular Git blob mode 100644)" \
+              'Validation: all tools/test_*.py; build_index.py --validate, --write, then --check' \
+              'Parent proof: Head has exactly Base as its sole parent.')"
+            [[ "${#audit_summary}" -le "$MAX_AUDIT_CHARS" ]] \
+              || fail "Check Run audit summary exceeded its fixed size bound."
+
+            if ! created_record="$(
+              gh api --method POST \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "repos/${GITHUB_REPOSITORY}/check-runs" \
+                --raw-field "name=${CHECK_NAME}" \
+                --raw-field "head_sha=${commit_sha}" \
+                --raw-field "status=completed" \
+                --raw-field "conclusion=success" \
+                --raw-field "external_id=${external_id}" \
+                --raw-field "details_url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+                --raw-field "output[title]=Validated protected index transaction" \
+                --raw-field "output[summary]=${audit_summary}" \
+                --jq '[.id, .name, .head_sha, .status, .conclusion, .app.slug, (.app.id | tostring), .external_id] | @tsv'
+            )"; then
+              fail "Could not create the required Check Run."
+            fi
+            verify_check_record "$created_record" "$commit_sha" "$external_id"
+            created_check_id="$check_record_id"
+
+            if ! read_record="$(
+              gh api --method GET \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "repos/${GITHUB_REPOSITORY}/check-runs/${created_check_id}" \
+                --jq '[.id, .name, .head_sha, .status, .conclusion, .app.slug, (.app.id | tostring), .external_id] | @tsv'
+            )"; then
+              fail "Could not read back the required Check Run."
+            fi
+            verify_check_record "$read_record" "$commit_sha" "$external_id"
+            [[ "$check_record_id" == "$created_check_id" ]] \
+              || fail "Read-back Check Run id did not match the created Check Run."
+
+            if ! git fetch --no-tags origin \
+              +refs/heads/main:refs/remotes/origin/main; then
+              fail "Could not refresh origin/main after creating and reading back the required Check Run."
+            fi
+            latest_main="$(git rev-parse refs/remotes/origin/main^{commit})"
+            if [[ "$latest_main" != "$base_sha" ]]; then
+              handle_main_race "$branch" "$attempt" "before its protected update"
+              continue
+            fi
+
+            main_raced=0
+            for main_push_attempt in $(seq 1 "$MAX_SAME_SHA_PUSH_ATTEMPTS"); do
+              echo "Protected main push ${main_push_attempt}/${MAX_SAME_SHA_PUSH_ATTEMPTS} for exact checked SHA ${commit_sha}."
+              if git push origin "${commit_sha}:refs/heads/main"; then
+                echo "Pushed checked regenerated index commit to protected main."
+                completed=1
+                delete_temp_branch "$branch" "protected main update succeeded"
+                echo "::endgroup::"
+                break
+              fi
+
+              echo "Protected main update ${main_push_attempt}/${MAX_SAME_SHA_PUSH_ATTEMPTS} was rejected; checking whether main raced."
+              if ! git fetch --no-tags origin \
+                +refs/heads/main:refs/remotes/origin/main; then
+                fail "Could not refresh origin/main after checked main push ${main_push_attempt}/${MAX_SAME_SHA_PUSH_ATTEMPTS} was rejected."
+              fi
+              latest_main="$(git rev-parse refs/remotes/origin/main^{commit})"
+              if [[ "$latest_main" != "$base_sha" ]]; then
+                handle_main_race "$branch" "$attempt" "during checked main push ${main_push_attempt}/${MAX_SAME_SHA_PUSH_ATTEMPTS}"
+                main_raced=1
+                break
+              fi
+
+              if [[ "$main_push_attempt" -lt "$MAX_SAME_SHA_PUSH_ATTEMPTS" ]]; then
+                propagation_delay_seconds=$((PROPAGATION_DELAY_BASE_SECONDS * main_push_attempt))
+                echo "Main did not race; waiting ${propagation_delay_seconds}s before retrying the same SHA and same Check Run. Total propagation wait is bounded at ${MAX_PROPAGATION_WAIT_SECONDS}s."
+                sleep "$propagation_delay_seconds"
+              fi
+            done
+
+            if [[ "$completed" -eq 1 ]]; then
               break
             fi
-
-            echo "Push rejected — main moved during this attempt. Refetching and retrying."
-            echo "::endgroup::"
-          done
-
-          if [ "$pushed" -ne 1 ]; then
-            echo "Direct push still unsafe after ${MAX_ATTEMPTS} attempts; opening a short operator PR instead."
-            branch="bot/regenerate-index-${{ github.run_id }}"
-            git fetch origin main
-            git checkout -B "$branch" origin/main
-            python3 tools/build_index.py --write
-            python3 tools/build_index.py --check
-
-            if git diff --quiet -- submissions/index.json; then
-              echo "submissions/index.json already current; no PR needed."
-              exit 0
+            if [[ "$main_raced" -eq 1 ]]; then
+              continue
             fi
 
-            git add submissions/index.json
-            git commit -m "chore(index): regenerate submissions/index.json"
-            # branch name is unique per run (github.run_id), so this can
-            # never collide with prior history — a plain push is sufficient
-            # and avoids force-pushing (no history rewrite).
-            git push -u origin "$branch"
+            echo "::endgroup::"
+            fail "GitHub rejected exact checked SHA ${commit_sha} on all ${MAX_SAME_SHA_PUSH_ATTEMPTS} bounded push attempts while origin/main remained ${base_sha}. The single successful Check Run was not recreated or reused for another SHA. Verify that the main ruleset requires the bare '${CHECK_NAME}' context from GitHub Actions integration id ${CHECK_APP_ID}, permits direct fast-forward index commits without a require-PR rule, and has propagated. No fallback PR was opened."
+          done
 
-            gh pr create \
-              --title "chore(index): regenerate submissions/index.json" \
-              --body "Automated regeneration (tools/build_index.py --write) could not push directly to main after ${MAX_ATTEMPTS} attempts. Opening for operator review per specs/ANTIPATTERNS.md §9 (operator-mediated merges)." \
-              --base main \
-              --head "$branch" || echo "PR may already exist for this run; continuing."
-          fi
+          [[ "$completed" -eq 1 ]] \
+            || fail "Protected index attempts ended without updating main."
