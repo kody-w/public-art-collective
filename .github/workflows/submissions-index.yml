@@ -21,6 +21,7 @@ on:
       - "view.html"
       - "neighborhood.json"
       - ".github/workflows/submissions-index.yml"
+      - ".github/workflows/reviewed-png-attestation.yml"
   push:
     branches: [main]
     paths-ignore:
