@@ -2,8 +2,8 @@ name: Reviewed PNG provenance
 
 # Security boundary: pull_request_target loads this workflow from the protected
 # base branch. The trusted validator runs from the protected main tip, while
-# the candidate checkout is data only; no script, action, or workflow from the
-# PR head is executed.
+# the sparse candidate submissions/workflows checkout is data only; no script,
+# action, or workflow from the PR head is executed.
 on:
   pull_request_target:
     branches: [main]
@@ -35,17 +35,19 @@ jobs:
           path: trusted
           persist-credentials: false
 
-      - name: Checkout untrusted submission bytes
+      - name: Checkout untrusted candidate data
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
           path: candidate
           persist-credentials: false
-          sparse-checkout: submissions
+          sparse-checkout: |
+            submissions
+            .github/workflows
           sparse-checkout-cone-mode: false
 
-      - name: Validate protected PNG publication or takedown
+      - name: Validate candidate workflow policy and protected PNG provenance
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
