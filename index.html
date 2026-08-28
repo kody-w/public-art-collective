@@ -172,21 +172,19 @@
     })();
 
     // Live presence: count unique actors active in the last 15 min on this repo.
-    // Anonymous GitHub events API; no central service. Graceful fail when offline.
+    // Article XXIV (Static Data Covenant): read the CI-harvested snapshot
+    // (scripts/build_presence.py -> state/presence.json), never api.github.com
+    // from the browser. Graceful fail when offline or not yet built.
     (async function () {
       const banner = document.getElementById("presence-banner");
       const countEl = document.getElementById("presence-count");
       const emojiEl = document.getElementById("presence-emoji");
       const labelEl = document.getElementById("presence-label");
       const actorsEl = document.getElementById("presence-actors");
-      const slug = "kody-w/public-art-collective";
       try {
-        const r = await fetch(
-          "https://api.github.com/repos/" + slug + "/events?per_page=50",
-          { headers: { "Accept": "application/vnd.github+json" } }
-        );
+        const r = await fetch("./state/presence.json", { cache: "no-store" });
         if (!r.ok) return;
-        const events = await r.json();
+        const events = (await r.json()).events || [];
         const cutoff = Date.now() - 15 * 60 * 1000;
         const actors = new Set();
         for (const e of events) {
